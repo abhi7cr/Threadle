@@ -1,0 +1,8 @@
+{
+  "entry": "index.html",
+  "managedCronJobs": [],
+  "name": "Threadle",
+  "platformVersion": 15,
+  "runtime": "static",
+  "slug": "word-game"
+}
