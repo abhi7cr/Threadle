@@ -391,7 +391,7 @@
       font-weight: 750;
       letter-spacing: .18em;
     }
-    .controls { display: grid; grid-template-columns: 1fr; gap: 9px; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
     .controls.final-mode { display: none; }
     .controls .primary { display: none; }
     .controls button {
@@ -405,6 +405,7 @@
       font-weight: 650;
     }
     .controls .hint-button { background: var(--accent-soft); color: var(--accent-strong); border-color: var(--accent); }
+    .controls .skip-button { background: transparent; color: var(--ink); border-color: var(--line); }
     .controls .primary { background: var(--ink); color: var(--surface); border-color: var(--ink); }
     .controls button:disabled { opacity: .38; cursor: default; }
     .key-rack {
@@ -506,37 +507,43 @@
     .meta-submit:disabled, .meta-input:disabled { opacity: .45; cursor: default; }
     .meta-progress { margin-top: 9px; color: var(--muted); font-size: 10px; text-align: center; }
 
-    .found-strip {
+    .round-nav {
+      width: calc(100% - 112px);
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: 32px minmax(0, 1fr) 32px;
+      align-items: center;
       gap: 5px;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
-    .word-slot {
-      min-width: 0;
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 2px;
-      padding: 4px 3px;
-      border-radius: 5px;
-      background: var(--tile);
+    .round-nav .stage-label { margin: 0; padding-right: 0; text-align: center; white-space: nowrap; }
+    .current-hint {
+      min-height: 18px;
+      margin-top: 5px;
+      color: var(--accent-strong);
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .18em;
     }
-    .word-slot.active { box-shadow: inset 0 0 0 2px var(--accent); }
-    .word-slot.found { background: var(--accent-soft); }
-    .word-slot.missed { background: var(--tile); opacity: .66; }
-    .word-slot i {
-      min-width: 0;
-      height: 13px;
+    .current-hint:empty { display: none; }
+    .round-arrow {
+      width: 32px;
+      height: 32px;
       display: grid;
       place-items: center;
-      border-bottom: 1px solid var(--line);
-      color: var(--accent-strong);
-      font-size: clamp(7px, 1.7vw, 9px);
-      font-style: normal;
-      font-weight: 750;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: 650;
       line-height: 1;
     }
-    .word-slot.found i { border-bottom-color: transparent; }
+    .round-arrow:hover:not(:disabled) { background: var(--tile); }
+    .round-arrow:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+    .round-arrow:disabled { opacity: .3; cursor: default; }
+    .round-arrow[hidden] { visibility: hidden; display: grid; }
     .guess-history { display: grid; gap: 4px; margin-top: 10px; max-height: 92px; overflow-y: auto; }
     .guess-history:empty { display: none; }
     .history-row { display: grid; grid-template-columns:48px repeat(5,22px) 1fr; gap:3px; align-items:center; justify-content:center; }
@@ -742,7 +749,6 @@
     .meta-input { font-size: 16px; }
     .meta-submit { font-size: 13px; }
     .meta-progress { font-size: 11px; }
-    .word-slot i { font-size: clamp(6px, calc(2vw - 2px), 9px); }
     .history-word { font-size: 9px; }
     .history-row b { font-size: 9px; }
     .history-row small { font-size: 8px; }
@@ -825,13 +831,20 @@
           </div>
           <div class="key-rack" id="keyRack" aria-label="Banked golden letters" aria-live="polite" hidden></div>
           <div class="game-top">
-            <div class="word-stage"><div class="stage-label" id="roundLabel">Word 1 of 5 · 5 letters</div><div class="clue" id="clue">Loading…</div></div>
+            <div class="word-stage">
+              <div class="round-nav" aria-label="Round navigation">
+                <button class="round-arrow" id="prevRoundBtn" type="button" aria-label="Previous available round">‹</button>
+                <div class="stage-label" id="roundLabel">Round 1 of 5</div>
+                <button class="round-arrow" id="nextRoundBtn" type="button" aria-label="Next available round">›</button>
+              </div>
+              <div class="clue" id="clue">Loading…</div>
+              <div class="current-hint" id="currentHint" aria-live="polite"></div>
+            </div>
             <div class="game-actions">
               <button class="how-button" id="tutorialBtn" type="button">How to play</button>
               <button class="icon-button" id="helpBtn" type="button" aria-label="Open rules guide">?</button>
             </div>
           </div>
-          <div class="found-strip" id="foundStrip" aria-label="Five word rounds"></div>
           <div class="finale-instruction" id="finaleInstruction" hidden>Trace the gold letters through open tiles. Bonus: shortest path possible.</div>
           <div class="board-wrap" id="boardWrap">
             <svg id="pathSvg" aria-hidden="true">
@@ -843,6 +856,7 @@
           <div class="trace-readout" id="traceReadout" aria-live="polite">—</div>
           <div class="controls" id="controls">
             <button class="hint-button" id="hintBtn" type="button">Hint</button>
+            <button class="skip-button" id="skipBtn" type="button">Skip</button>
             <button class="primary" id="tryBtn" type="button" disabled>Check guess</button>
           </div>
           <div class="status" id="status" aria-live="polite">Trace a five-letter word on the grid.</div>
@@ -858,7 +872,7 @@
       <h2 id="helpTitle">How to play</h2>
       <p>Solve five crossword-style clues, bank golden letters, then weave one golden thread through the board.</p>
       <ol>
-        <li>Each of the five rounds presents a crossword-style clue for a five-letter word. Find it above the letter grid, directly below the “Word X of 5 · 5 letters” round label.</li>
+        <li>Each of the five rounds presents a crossword-style clue for a five-letter word. Find it above the letter grid, directly below the “Round X of 5” label.</li>
         <li>Press a tile and drag through four more letters. Move only up, down, left, or right; drag back over the previous tile to erase a step. Directional arrows show the route, and releasing submits it.</li>
         <li>Green means the right letter in the right spot, gold means the right letter in another spot, and gray means the letter is absent. You get six guesses per clue.</li>
         <li>Win a round and one scattered finale letter pops gold and banks into the tray. Then the board locks in that word’s one fixed <strong>true trail</strong> as permanent walls — it may differ from the route you traced. Golden tiles always stay open.</li>
@@ -866,7 +880,8 @@
         <li>After round five, the Golden Thread begins automatically. All five scattered gold positions appear; banked tiles show letters and missed letters stay hidden as “?”. The Gold Letters tray keeps the letters in the order you banked them, not spelling order — anagram the known letters to work out the finale. Other open cells are blank white, while sealed trails are solid black.</li>
         <li>For the Golden Thread, press and drag the shortest continuous route you can through every gold tile in spelling order. Gold tiles do not need to be adjacent — the thread may travel through any open cells between them. Never revisit a cell or enter a black obstacle — one simple path, pure Zip. Releasing after all five gold visits submits the thread.</li>
         <li>You get six thread attempts per entry. After a miss, gold tiles visited in the correct sequence position turn green and the others gray. Use all six and the finale locks until another golden letter is banked.</li>
-        <li>Scoring: 100 points for each clue round won, −10 for each hint used, +50 for every golden letter still unbanked when you crack the finale, and a 600-point time bonus that drops by one point each second. The shortest possible Golden Thread is par: match it exactly to earn a flat +10 shortest-path bonus. Any longer winning thread earns 0 for this bonus.</li>
+        <li>Skip moves past a stuck clue for 25 points. Use the round arrows to return to skipped rounds and solve them normally. You cannot skip the last pending round. Hints remain free.</li>
+        <li>Scoring: 100 points for each clue round won, −25 for each skip used, +50 for every golden letter still unbanked when you crack the finale, and a 600-point time bonus that drops by one point each second. The shortest possible Golden Thread is par: match it exactly to earn a flat +10 shortest-path bonus. Any longer winning thread earns 0 for this bonus.</li>
       </ol>
       <div class="feedback-key" aria-label="Feedback colors">
         <div class="key"><span class="swatch green">A</span> right spot</div>
@@ -23611,8 +23626,8 @@
         puzzle.words.forEach(function(word){dictionary.add(word);});
       });
       var els = {};
-      ['board','boardWrap','clue','roundLabel','status','timer','hintBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','foundStrip','finaleInstruction','guessHistory','keyRack','controls','modePicker','tutorialModal','tutorialCard','tutorialBtn','guideTutorialBtn','skipTutorial','demoBoard','demoWordPath','demoThreadPath','demoBank','tutorialStep','tutorialCaption'].forEach(function(id){ els[id]=document.getElementById(id); });
-      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode='daily', puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], roundIndex=0, roundGuesses=[], roundResults=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
+      ['board','boardWrap','clue','currentHint','roundLabel','prevRoundBtn','nextRoundBtn','status','timer','hintBtn','skipBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','finaleInstruction','guessHistory','keyRack','controls','modePicker','tutorialModal','tutorialCard','tutorialBtn','guideTutorialBtn','skipTutorial','demoBoard','demoWordPath','demoThreadPath','demoBank','tutorialStep','tutorialCaption'].forEach(function(id){ els[id]=document.getElementById(id); });
+      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode='daily', puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
       function clearTutorialTimers(){ tutorialTimers.forEach(function(timer){clearTimeout(timer);}); tutorialTimers=[]; }
       function tutorialLater(fn,delay){ tutorialTimers.push(setTimeout(fn,delay)); }
       function renderDemoBoard(letters,goldCells,hideOtherLetters){
@@ -23755,6 +23770,7 @@
         return p.keyPositions.map(function(cell){return source[cell];});
       }
       function completedRoundCount(){ return roundResults.filter(function(result){return !!result;}).length; }
+      function pendingRoundCount(){ return activePuzzle.words.filter(function(word,index){return !roundResults[index]&&!skippedRounds[index];}).length; }
       function bankedLetterCount(){ return roundResults.filter(function(result){return result&&result.banked;}).length; }
       function finaleIsUnlocked(){ return bankedLetterCount()>finaleLockAt; }
       function validRoute(path){
@@ -23970,7 +23986,7 @@
         var p=activePuzzle;
         applyTheme(false);
         storeBoardPar(p,boardLetters);
-        selected=[]; sealedPaths={}; roundIndex=0; roundGuesses=[]; roundResults=[]; totalWordGuesses=0; totalFinalGuesses=0; finalGuesses=[]; finaleAttemptHistory=[]; finalFeedback=null; guessReveal=null; hintReveals=p.words.map(function(){return [];}); hintsUsed=0; startedAt=null; gameOver=false; roundLocked=false; inFinal=false; finaleLockAt=-1; bankedAtFinaleWin=0; finalPathLength=0; unlockingChest=-1; lockingTrail=-1; finalScoreData=null;
+        selected=[]; sealedPaths={}; roundIndex=0; roundGuessHistory=p.words.map(function(){return [];}); roundGuesses=roundGuessHistory[0]; roundResults=[]; skippedRounds=p.words.map(function(){return false;}); visitedRounds=p.words.map(function(word,index){return index===0;}); totalWordGuesses=0; totalFinalGuesses=0; finalGuesses=[]; finaleAttemptHistory=[]; finalFeedback=null; guessReveal=null; hintReveals=p.words.map(function(){return [];}); hintsUsed=0; skipCount=0; startedAt=null; gameOver=false; roundLocked=false; inFinal=false; finaleLockAt=-1; bankedAtFinaleWin=0; finalPathLength=0; unlockingChest=-1; lockingTrail=-1; finalScoreData=null;
         if(timerHandle)clearInterval(timerHandle); timerHandle=null;
         els.timer.textContent='0:00';
         els.gameView.hidden=false; els.winView.hidden=true; els.keyRack.hidden=true; els.controls.classList.remove('final-mode');
@@ -24101,18 +24117,37 @@
         var bankedLetters=goldLetters.map(function(letter,round){var result=roundResults[round];return result&&result.banked?letter:'?';});
         els.keyRack.innerHTML='<span class="key-rack-label">Gold letters</span>'+bankedLetters.map(function(ch,round){return '<span class="key-letter'+(unlockingChest===round?' bank-just':'')+'">'+ch+'</span>';}).join('');
       }
+      function roundIsReturnable(index){
+        return !inFinal&&!roundResults[index]&&index!==roundIndex&&(visitedRounds[index]||skippedRounds[index]);
+      }
+      function availableRoundInDirection(direction){
+        for(var index=roundIndex+direction;index>=0&&index<activePuzzle.words.length;index+=direction){
+          if(roundIsReturnable(index))return index;
+        }
+        return -1;
+      }
+      function renderRoundNavigation(){
+        var prev=availableRoundInDirection(-1), next=availableRoundInDirection(1), hide=inFinal;
+        els.prevRoundBtn.hidden=hide; els.nextRoundBtn.hidden=hide;
+        els.prevRoundBtn.disabled=hide||gameOver||roundLocked||prev===-1;
+        els.nextRoundBtn.disabled=hide||gameOver||roundLocked||next===-1;
+        els.prevRoundBtn.dataset.target=prev;
+        els.nextRoundBtn.dataset.target=next;
+        els.prevRoundBtn.setAttribute('aria-label',prev===-1?'No previous available round':'Go to round '+(prev+1));
+        els.nextRoundBtn.setAttribute('aria-label',next===-1?'No next available round':'Go to round '+(next+1));
+      }
+      function unresolvedOtherRoundForWord(word,currentRound){
+        return activePuzzle.words.findIndex(function(answer,index){
+          var result=roundResults[index];
+          return index!==currentRound&&!(result&&result.solved)&&answer===word;
+        });
+      }
       function renderState(){
         var p=activePuzzle;
         els.hintsUsedCount.textContent=hintsUsed;
         renderKeyRack(p);
-        els.foundStrip.innerHTML=p.words.map(function(word,wi){
-          var result=roundResults[wi], revealed=hintReveals[wi]||[], isCurrent=wi===roundIndex&&!result&&!inFinal;
-          var showAnswer=!!result;
-          var letters=word.split('').map(function(ch,pos){return '<i>'+((showAnswer||revealed.indexOf(pos)!==-1)?ch:'')+'</i>';}).join('');
-          var state=result?(result.solved?'found':'missed'):(isCurrent?'active':'');
-          var label=result?(result.solved?'solved: ':'missed, answer: ')+word:(isCurrent?'current word':'upcoming word');
-          return '<div class="word-slot'+(state?' '+state:'')+'" aria-label="Word '+(wi+1)+', '+label+'">'+letters+'</div>';
-        }).join('');
+        renderRoundNavigation();
+        els.currentHint.textContent='';
         els.finaleInstruction.hidden=!inFinal;
         els.traceReadout.textContent=inFinal?('Path: '+selected.length+' '+(selected.length===1?'cell':'cells')+' · Par '+p.par):(tracedWord()||'—');
         els.tryBtn.disabled=true;
@@ -24123,21 +24158,40 @@
           queueClueFit();
           els.controls.classList.add('final-mode');
           els.hintBtn.disabled=true;
+          els.skipBtn.disabled=true;
           els.tryBtn.textContent='Check thread';
           els.guessHistory.innerHTML=finalGuesses.slice().reverse().map(function(g){
             return '<div class="history-row" aria-label="Golden thread attempt"><span class="history-word">THREAD</span>'+g.letters.map(function(ch,i){return '<b class="'+(g.feedback[i]?'correct':'absent')+'">'+ch+'</b>';}).join('')+(g.solved?'<small>LINK</small>':'')+'</div>';
           }).join('');
           return;
         }
+        if(roundResults[roundIndex]&&!roundLocked){
+          var skippedAvailable=skippedRounds.some(function(skipped,index){return skipped&&!roundResults[index];});
+          els.guessBudget.textContent='0';
+          els.roundLabel.textContent='Round '+(roundIndex+1)+' of 5';
+          els.clue.textContent=skippedAvailable?'Use the arrows to return to a skipped round':'No clue rounds remain';
+          queueClueFit();
+          els.controls.classList.remove('final-mode');
+          els.hintBtn.disabled=true; els.skipBtn.disabled=true;
+          els.guessHistory.innerHTML='';
+          return;
+        }
         els.guessBudget.textContent=Math.max(0,MAX_ROUND_GUESSES-roundGuesses.length);
-        els.roundLabel.textContent='Word '+(roundIndex+1)+' of 5 · 5 letters';
+        els.roundLabel.textContent='Round '+(roundIndex+1)+' of 5';
         els.clue.textContent=p.clues[roundIndex];
+        if((hintReveals[roundIndex]||[]).length){
+          els.currentHint.textContent='Hint: '+p.words[roundIndex].split('').map(function(letter,index){return hintReveals[roundIndex].indexOf(index)!==-1?letter:'_';}).join(' ');
+        }
         queueClueFit();
         els.controls.classList.remove('final-mode');
         els.tryBtn.textContent='Release to submit';
         els.hintBtn.disabled=gameOver||roundLocked||(hintReveals[roundIndex]||[]).length>=5;
         els.hintBtn.textContent='Hint';
+        els.skipBtn.disabled=gameOver||roundLocked||pendingRoundCount()<=1;
+        els.skipBtn.textContent='Skip';
+        els.skipBtn.title=els.skipBtn.disabled&&!gameOver&&!roundLocked?'The last pending round must be attempted.':'Skip this clue for 25 points';
         els.guessHistory.innerHTML=roundGuesses.slice().reverse().map(function(g){
+          if(g.hidden)return '<div class="history-row" aria-label="Out-of-order round answer hidden"><span class="history-word">OTHER</span>'+g.feedback.map(function(f){return '<b class="'+f+'"></b>';}).join('')+'</div>';
           return '<div class="history-row" aria-label="'+g.word+'"><span class="history-word">'+g.word+'</span>'+g.feedback.map(function(f,i){return '<b class="'+f+'">'+g.word[i]+'</b>';}).join('')+(g.solved?'<small>SOLVED</small>':'')+'</div>';
         }).join('');
       }
@@ -24151,14 +24205,44 @@
         renderState();
         setStatus('One letter revealed for the current word.','success');
       }
+      function nextPendingRound(after){
+        for(var step=1;step<=activePuzzle.words.length;step++){
+          var candidate=(after+step)%activePuzzle.words.length;
+          if(!roundResults[candidate]&&!skippedRounds[candidate])return candidate;
+        }
+        return -1;
+      }
+      function moveToRound(index,message){
+        inFinal=false; applyTheme(false); roundIndex=index; visitedRounds[index]=true; roundGuesses=roundGuessHistory[index]; selected=[]; finalFeedback=null; guessReveal=null; roundLocked=false; lockingTrail=-1;
+        applyTiles(); renderState(); setStatus(message||'Round '+(index+1)+'. Trace a five-letter answer.','');
+      }
+      function useSkip(){
+        if(gameOver||roundLocked||inFinal)return;
+        if(pendingRoundCount()<=1){setStatus('This is the last pending round. Attempt it or return to a skipped round.','error');return;}
+        startTimer();
+        skippedRounds[roundIndex]=true;
+        skipCount++;
+        var next=nextPendingRound(roundIndex);
+        moveToRound(next,'Round skipped. 25 points deducted — use the arrows to return.');
+      }
+      function returnToRound(index){
+        if(gameOver||roundLocked||index<0||!roundIsReturnable(index))return;
+        var wasSkipped=skippedRounds[index];
+        skippedRounds[index]=false;
+        moveToRound(index,wasSkipped?'Returned to skipped round '+(index+1)+'. Solve it to bank its gold letter.':'Returned to round '+(index+1)+'.');
+      }
       function submitGuess(){
         if(gameOver||roundLocked||inFinal)return;
-        var trace=tracedWord(),p=activePuzzle,target=p.words[roundIndex],submittingRound=roundIndex;
+        var trace=tracedWord(),p=activePuzzle,submittingRound=roundIndex,target=p.words[submittingRound];
         if(selected.length!==5){setStatus('Release after tracing exactly five connected tiles.','error');return;}
         if(!dictionary.has(trace)){selected=[];applyTiles();renderState();setStatus(trace+' is not a valid English word.','error');return;}
         startTimer();
-        var solved=trace===target,feedback=standardFeedback(trace,target);
-        roundGuesses.push({word:trace,feedback:feedback,solved:solved});
+        var solved=trace===target, outOfOrderRound=unresolvedOtherRoundForWord(trace,submittingRound);
+        // An answer belonging to another unfinished round is still a wrong
+        // attempt here, but receives neutral feedback so it cannot expose that
+        // round's gold letter or remain visible in the guess history.
+        var feedback=outOfOrderRound===-1?standardFeedback(trace,target):new Array(5).fill('absent');
+        roundGuesses.push({word:trace,feedback:feedback,solved:solved,hidden:outOfOrderRound!==-1});
         totalWordGuesses++;
         guessReveal={cells:selected.slice(),feedback:feedback.slice()}; roundLocked=true;
         applyTiles(); renderState(); setStatus('Checking guess…','');
@@ -24166,32 +24250,35 @@
           if(activePuzzle!==p||roundIndex!==submittingRound)return;
           guessReveal=null; selected=[];
           if(solved){
-            roundResults[roundIndex]={word:target,solved:true,banked:true};
-            unlockingChest=roundIndex; lockingTrail=roundIndex; sealedPaths[target]=p.canonicalPaths[roundIndex].slice();
-            applyTiles();renderState();setStatus('Correct! Trail sealed. Golden '+keyLettersFor(p,boardLetters)[roundIndex]+' banked.','success');
+            roundResults[submittingRound]={word:target,solved:true,banked:true}; skippedRounds[submittingRound]=false;
+            unlockingChest=submittingRound; lockingTrail=submittingRound; sealedPaths[target]=p.canonicalPaths[submittingRound].slice();
+            applyTiles();renderState();setStatus('Correct! Trail sealed. Golden '+keyLettersFor(p,boardLetters)[submittingRound]+' banked.','success');
             setTimeout(function(){if(activePuzzle!==p||roundIndex!==submittingRound)return;unlockingChest=-1;lockingTrail=-1;applyTiles();renderState();},400);
             setTimeout(advanceRound,720);
             return;
           }
           if(roundGuesses.length>=MAX_ROUND_GUESSES){
-            roundResults[roundIndex]={word:target,solved:false,banked:false};
-            applyTiles(); renderState(); setStatus('Missed. The answer was '+target+'. No golden letter was revealed.','error');
+            roundResults[submittingRound]={word:target,solved:false,banked:false}; skippedRounds[submittingRound]=false;
+            applyTiles(); renderState(); setStatus('Round missed. No golden letter was revealed.','error');
             setTimeout(advanceRound,1150); return;
           }
           roundLocked=false; applyTiles(); renderState(); setStatus('Valid guess. '+(MAX_ROUND_GUESSES-roundGuesses.length)+' left.','');
         },480);
       }
       function advanceRound(){
-        var p=activePuzzle;
-        if(roundIndex>=p.words.length-1){
-          startFinalRound(); return;
+        var next=nextPendingRound(roundIndex);
+        unlockingChest=-1; lockingTrail=-1;
+        if(next!==-1){moveToRound(next,'New clue. Win this round to reveal its golden letter.');return;}
+        roundLocked=false;
+        if(completedRoundCount()<activePuzzle.words.length){
+          applyTiles(); renderState(); setStatus('Skipped rounds remain. Use the arrows to return and solve them.',''); return;
         }
-        roundIndex++; roundGuesses=[]; selected=[]; roundLocked=false; lockingTrail=-1;
-        applyTiles(); renderState(); setStatus('New clue. Win this round to reveal its golden letter.','');
+        if(finaleIsUnlocked()){startFinalRound();return;}
+        applyTiles(); renderState(); setStatus('Golden Thread locked. No skipped rounds remain to bank another letter.','error');
       }
       function standardFeedback(guess,target){ var out=new Array(target.length).fill('absent'),counts={}; for(var i=0;i<target.length;i++){if(guess[i]===target[i])out[i]='correct';else counts[target[i]]=(counts[target[i]]||0)+1;} for(var j=0;j<target.length;j++){if(out[j]==='correct')continue;if(counts[guess[j]]){out[j]='present';counts[guess[j]]--;}} return out; }
       function startFinalRound(){
-        if(gameOver||!finaleIsUnlocked())return;
+        if(gameOver||completedRoundCount()<activePuzzle.words.length||!finaleIsUnlocked())return;
         var bankedCount=bankedLetterCount();
         inFinal=true; roundLocked=false; selected=[]; finalFeedback=null;
         applyTheme(true);
@@ -24235,7 +24322,7 @@
       function buildShareText(){
         var d=finalScoreData, heading=puzzleMode==='daily'?'WordZip Daily '+dailyKey:'WordZip Practice '+(puzzleIndex+1);
         var emoji=finaleAttemptHistory.map(function(attempt){return attempt.feedback.map(function(ok){return ok?'🟩':'⬛';}).join('');}).join('\n');
-        return heading+'\n'+emoji+'\n\nScore '+d.score+'\nRound points +'+d.roundPoints+'\nHint penalties −'+d.hintPenalty+'\nEarly-crack bonus +'+d.earlyBonus+'\nShortest-path bonus +'+d.efficiencyBonus+' ('+(d.pathLength===d.par?'matched par':'longer than par')+')\nTime bonus +'+d.timeBonus+'\nGolden Thread '+d.pathLength+' cells (par '+d.par+')\nFinale cracked with '+bankedAtFinaleWin+'/5 golden letters\n'+PUBLIC_LINK;
+        return heading+'\n'+emoji+'\n\nScore '+d.score+'\nRound points +'+d.roundPoints+'\nSkip penalty: -'+d.skipPenalty+'\nEarly-crack bonus +'+d.earlyBonus+'\nShortest-path bonus +'+d.efficiencyBonus+' ('+(d.pathLength===d.par?'matched par':'longer than par')+')\nTime bonus +'+d.timeBonus+'\nGolden Thread '+d.pathLength+' cells (par '+d.par+')\nFinale cracked with '+bankedAtFinaleWin+'/5 golden letters\n'+PUBLIC_LINK;
       }
       function clipboardFallback(text){
         if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text);
@@ -24255,13 +24342,13 @@
       function finish(){
         var timeSeconds=elapsed(); stopTimer();
         var p=activePuzzle, solvedCount=roundResults.filter(function(r){return r&&r.solved;}).length;
-        var skippedCount=5-completedRoundCount(), roundPoints=solvedCount*100, hintPenalty=hintsUsed*10, earlyBonus=(5-bankedAtFinaleWin)*50, efficiencyBonus=finalPathLength===p.par?10:0, timeBonus=Math.max(0,600-timeSeconds);
-        var score=roundPoints-hintPenalty+earlyBonus+efficiencyBonus+timeBonus;
-        finalScoreData={score:score,roundPoints:roundPoints,hintPenalty:hintPenalty,earlyBonus:earlyBonus,efficiencyBonus:efficiencyBonus,pathLength:finalPathLength,par:p.par,timeBonus:timeBonus};
-        var completedWords=roundResults.map(function(result){return result?'<span>'+result.word+'</span>':'';}).join('');
+        var skippedCount=skippedRounds.filter(function(skipped,index){return skipped&&!roundResults[index];}).length, roundPoints=solvedCount*100, skipPenalty=skipCount*25, earlyBonus=(5-bankedAtFinaleWin)*50, efficiencyBonus=finalPathLength===p.par?10:0, timeBonus=Math.max(0,600-timeSeconds);
+        var score=roundPoints-skipPenalty+earlyBonus+efficiencyBonus+timeBonus;
+        finalScoreData={score:score,roundPoints:roundPoints,skipPenalty:skipPenalty,earlyBonus:earlyBonus,efficiencyBonus:efficiencyBonus,pathLength:finalPathLength,par:p.par,timeBonus:timeBonus};
+        var completedWords=roundResults.map(function(result){return result&&result.solved?'<span>'+result.word+'</span>':'';}).join('');
         var nextLabel=puzzleMode==='daily'?'Practice 1':'Next practice';
         els.gameView.hidden=true; els.winView.hidden=false;
-        els.winView.innerHTML='<div class="win-mark">✓</div><h2>Link found</h2><div class="finale-metric">Finale cracked with '+bankedAtFinaleWin+'/5 golden letters</div><p>The connection is <strong>'+p.finalWord+'</strong>.'+(skippedCount?'<br>'+skippedCount+' remaining '+(skippedCount===1?'round was':'rounds were')+' skipped.':'')+'</p><div class="score-total">'+score+'<span>Total points</span></div><div class="score-breakdown"><div class="score-row"><span>Round points<small>'+solvedCount+' clue '+(solvedCount===1?'round':'rounds')+' won × 100</small></span><strong>+'+roundPoints+'</strong></div><div class="score-row"><span>Hint penalties<small>'+hintsUsed+' '+(hintsUsed===1?'hint':'hints')+' used × 10</small></span><strong>−'+hintPenalty+'</strong></div><div class="score-row"><span>Early-crack bonus<small>'+(5-bankedAtFinaleWin)+' unbanked golden '+((5-bankedAtFinaleWin)===1?'letter':'letters')+' × 50</small></span><strong>+'+earlyBonus+'</strong></div><div class="score-row"><span>Shortest-path bonus<small>'+(finalPathLength===p.par?'Matched par exactly · flat +10':'Longer than par · no bonus')+' ('+finalPathLength+' vs '+p.par+' cells)</small></span><strong>+'+efficiencyBonus+'</strong></div><div class="score-row"><span>Time bonus<small>600 minus '+timeSeconds+' elapsed seconds</small></span><strong>+'+timeBonus+'</strong></div><div class="score-row total"><span>Total</span><strong>'+score+'</strong></div></div><div class="win-stats"><div class="stat"><strong>'+formatTime(timeSeconds)+'</strong><span>Time</span></div><div class="stat"><strong>'+solvedCount+'/5</strong><span>Rounds</span></div><div class="stat"><strong>'+(totalWordGuesses+totalFinalGuesses)+'</strong><span>Traces</span></div><div class="stat"><strong>'+hintsUsed+'</strong><span>Hints</span></div></div><div class="found-words">'+completedWords+'</div><div class="result-actions"><button class="share-score" type="button">Share score</button><button class="play-next" type="button">'+nextLabel+'</button></div><div class="share-status" aria-live="polite"></div>';
+        els.winView.innerHTML='<div class="win-mark">✓</div><h2>Link found</h2><div class="finale-metric">Finale cracked with '+bankedAtFinaleWin+'/5 golden letters</div><p>The connection is <strong>'+p.finalWord+'</strong>.'+(skippedCount?'<br>'+skippedCount+' remaining '+(skippedCount===1?'round was':'rounds were')+' skipped.':'')+'</p><div class="score-total">'+score+'<span>Total points</span></div><div class="score-breakdown"><div class="score-row"><span>Round points<small>'+solvedCount+' clue '+(solvedCount===1?'round':'rounds')+' won × 100</small></span><strong>+'+roundPoints+'</strong></div><div class="score-row"><span>Skip penalty:<small>'+skipCount+' '+(skipCount===1?'skip':'skips')+' used × 25</small></span><strong>-'+skipPenalty+'</strong></div><div class="score-row"><span>Early-crack bonus<small>'+(5-bankedAtFinaleWin)+' unbanked golden '+((5-bankedAtFinaleWin)===1?'letter':'letters')+' × 50</small></span><strong>+'+earlyBonus+'</strong></div><div class="score-row"><span>Shortest-path bonus<small>'+(finalPathLength===p.par?'Matched par exactly · flat +10':'Longer than par · no bonus')+' ('+finalPathLength+' vs '+p.par+' cells)</small></span><strong>+'+efficiencyBonus+'</strong></div><div class="score-row"><span>Time bonus<small>600 minus '+timeSeconds+' elapsed seconds</small></span><strong>+'+timeBonus+'</strong></div><div class="score-row total"><span>Total</span><strong>'+score+'</strong></div></div><div class="win-stats"><div class="stat"><strong>'+formatTime(timeSeconds)+'</strong><span>Time</span></div><div class="stat"><strong>'+solvedCount+'/5</strong><span>Rounds</span></div><div class="stat"><strong>'+(totalWordGuesses+totalFinalGuesses)+'</strong><span>Traces</span></div><div class="stat"><strong>'+hintsUsed+'</strong><span>Hints</span></div></div><div class="found-words">'+completedWords+'</div><div class="result-actions"><button class="share-score" type="button">Share score</button><button class="play-next" type="button">'+nextLabel+'</button></div><div class="share-status" aria-live="polite"></div>';
         els.winView.querySelector('.share-score').addEventListener('click',shareScore);
         els.winView.querySelector('.play-next').addEventListener('click',function(){if(puzzleMode==='daily')setupPuzzle('practice',0);else setupPuzzle('practice',puzzleIndex+1);});
       }
@@ -24286,7 +24373,9 @@
         else setStatus('Trace released early. Start again and drag through five letters.','error');
       });
       window.addEventListener('pointercancel',function(){dragging=false;});window.addEventListener('resize',drawPath);
-      els.tryBtn.addEventListener('click',submitGuess);els.hintBtn.addEventListener('click',useHint);
+      els.tryBtn.addEventListener('click',submitGuess);els.hintBtn.addEventListener('click',useHint);els.skipBtn.addEventListener('click',useSkip);
+      els.prevRoundBtn.addEventListener('click',function(){returnToRound(Number(els.prevRoundBtn.dataset.target));});
+      els.nextRoundBtn.addEventListener('click',function(){returnToRound(Number(els.nextRoundBtn.dataset.target));});
       els.modePicker.addEventListener('click',function(e){var button=e.target.closest('button[data-mode]');if(!button)return;setupPuzzle(button.dataset.mode,Number(button.dataset.index||0));});
       els.tutorialBtn.addEventListener('click',function(){showTutorial(false);});
       els.skipTutorial.addEventListener('click',closeTutorial);
