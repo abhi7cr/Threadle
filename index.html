@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="color-scheme" content="light dark" />
+  <meta name="color-scheme" content="dark light" />
   <link rel="icon" href="data:," />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,91 +11,105 @@
   <title>Threadle</title>
   <style>
     :root {
-      color-scheme: light dark;
-      --bg: #f4f6f2;
-      --surface: #ffffff;
-      --ink: #17211c;
-      --muted: #5b665f;
-      --line: #cdd4cf;
-      --tile: #e7ece8;
-      --tile-hover: #dce4de;
-      --accent: #087f71;
-      --accent-strong: #05675c;
-      --accent-soft: #d7eeea;
-      --found-cell: #cbe7d4;
-      --found-cell-ink: #12613b;
-      --yellow: #c99712;
-      --yellow-soft: #f7e7ae;
-      --key: #b67c06;
-      --key-soft: #fff0ad;
-      --key-ink: #4d3500;
-      --absent: #6f7973;
-      --danger: #b4473c;
-      --shadow: 0 18px 44px rgba(28, 46, 37, .10);
-      --path: #173f38;
-      --play-bg: #edf2ee;
-      --play-surface: #fbfdfb;
-      --play-tile: #dce6df;
-      --play-tile-hover: #d0ddd4;
+      color-scheme: dark light;
+      --bg: #111612;
+      --surface: #1a211c;
+      --ink: #eef4ef;
+      --muted: #aab8ae;
+      --line: #3b4940;
+      --tile: #273029;
+      --tile-hover: #323d35;
+      --accent: #48b9a7;
+      --accent-strong: #76d2c4;
+      --accent-soft: #203f39;
+      --found-cell: #254536;
+      --found-cell-ink: #9addb7;
+      --yellow: #e2b73c;
+      --yellow-soft: #554718;
+      --key: #f0c34f;
+      --key-soft: #4a3b13;
+      --key-ink: #fff0c4;
+      --absent: #89958d;
+      --danger: #ef8175;
+      --shadow: 0 20px 50px rgba(0, 0, 0, .28);
+      --path: #8dd9cd;
+      --play-bg: #111a14;
+      --play-surface: #1a241d;
+      --play-tile: #29362d;
+      --play-tile-hover: #34443a;
+      --finale-open: #111612;
+      --finale-open-hover: #182019;
+      --finale-open-border: #303a33;
+      --finale-wall: #eef2ef;
+      --finale-wall-hover: #eef2ef;
+      --finale-wall-border: #ffffff;
+      --finale-wall-hatch: rgba(17, 22, 18, .08);
     }
-    body[data-theme="nature"] { --play-bg: #e5eee4; --play-surface: #f8fbf7; --play-tile: #ccddca; --play-tile-hover: #bfd4bd; }
-    body[data-theme="tech"] { --play-bg: #e5edf3; --play-surface: #f8fbfd; --play-tile: #cbdbe7; --play-tile-hover: #bccfdd; }
-    body[data-theme="science"] { --play-bg: #e4efee; --play-surface: #f7fbfa; --play-tile: #c7dedb; --play-tile-hover: #b7d3cf; }
-    body[data-theme="sports"] { --play-bg: #f2e9e1; --play-surface: #fdfaf7; --play-tile: #e5cfbd; --play-tile-hover: #dcbfa8; }
-    body[data-theme="food"] { --play-bg: #f2e8df; --play-surface: #fdf9f5; --play-tile: #e6cdb9; --play-tile-hover: #dcbba1; }
-    body[data-theme="coffee"] { --play-bg: #eee6df; --play-surface: #fbf8f5; --play-tile: #d9c4b4; --play-tile-hover: #cdb3a0; }
-    body[data-theme="music"] { --play-bg: #f1e7eb; --play-surface: #fcf8fa; --play-tile: #e2c9d4; --play-tile-hover: #d7b7c5; }
-    body[data-theme="screen"] { --play-bg: #ece7ef; --play-surface: #faf8fb; --play-tile: #d9cce0; --play-tile-hover: #cdbbd6; }
-    body[data-theme="history"] { --play-bg: #eee8df; --play-surface: #fbf9f5; --play-tile: #d9cbb7; --play-tile-hover: #cdbba1; }
-    body[data-theme="culture"] { --play-bg: #f0e7e8; --play-surface: #fcf8f8; --play-tile: #e0cacc; --play-tile-hover: #d4b9bd; }
-    body[data-theme="travel"] { --play-bg: #e3eef0; --play-surface: #f7fbfb; --play-tile: #c4dce0; --play-tile-hover: #b3d0d5; }
-    body[data-theme="craft"] { --play-bg: #f0e9e2; --play-surface: #fcf9f6; --play-tile: #dfcdbd; --play-tile-hover: #d4bba7; }
-    body[data-theme="language"] { --play-bg: #e9ebf1; --play-surface: #f9fafc; --play-tile: #d4d9e5; --play-tile-hover: #c5ccdc; }
-    body[data-theme="ocean"] { --play-bg: #e1edef; --play-surface: #f6fbfc; --play-tile: #bfdae0; --play-tile-hover: #add0d8; }
-    body[data-theme="winter"] { --play-bg: #eaf0f3; --play-surface: #fafcfd; --play-tile: #d5e0e7; --play-tile-hover: #c6d5de; }
-    @media (prefers-color-scheme: dark) {
+    body[data-theme="nature"] { --play-bg: #101b13; --play-surface: #19261c; --play-tile: #2a3e2d; --play-tile-hover: #36503a; }
+    body[data-theme="tech"] { --play-bg: #101820; --play-surface: #18232c; --play-tile: #293e4d; --play-tile-hover: #355064; }
+    body[data-theme="science"] { --play-bg: #0f1b1b; --play-surface: #182626; --play-tile: #294241; --play-tile-hover: #355553; }
+    body[data-theme="sports"] { --play-bg: #201610; --play-surface: #2b2018; --play-tile: #4a3526; --play-tile-hover: #5e4430; }
+    body[data-theme="food"] { --play-bg: #201611; --play-surface: #2b2019; --play-tile: #493526; --play-tile-hover: #5d4431; }
+    body[data-theme="coffee"] { --play-bg: #1d1612; --play-surface: #29201b; --play-tile: #44342a; --play-tile-hover: #574438; }
+    body[data-theme="music"] { --play-bg: #1e1419; --play-surface: #2a1d23; --play-tile: #472f3b; --play-tile-hover: #5a3c4b; }
+    body[data-theme="screen"] { --play-bg: #1b151e; --play-surface: #261e2a; --play-tile: #403448; --play-tile-hover: #51425b; }
+    body[data-theme="history"] { --play-bg: #1c1711; --play-surface: #282119; --play-tile: #423728; --play-tile-hover: #554735; }
+    body[data-theme="culture"] { --play-bg: #1f1516; --play-surface: #2a1e20; --play-tile: #463234; --play-tile-hover: #594043; }
+    body[data-theme="travel"] { --play-bg: #0f1b1d; --play-surface: #182528; --play-tile: #284248; --play-tile-hover: #34545b; }
+    body[data-theme="craft"] { --play-bg: #1d1712; --play-surface: #29211b; --play-tile: #44372c; --play-tile-hover: #57483a; }
+    body[data-theme="language"] { --play-bg: #151820; --play-surface: #1e232c; --play-tile: #343b4a; --play-tile-hover: #434c60; }
+    body[data-theme="ocean"] { --play-bg: #0d1a1e; --play-surface: #16252a; --play-tile: #25434b; --play-tile-hover: #305661; }
+    body[data-theme="winter"] { --play-bg: #131a1f; --play-surface: #1c252c; --play-tile: #303e49; --play-tile-hover: #3d505e; }
+    @media (prefers-color-scheme: light) {
       :root {
-        --bg: #111612;
-        --surface: #1a211c;
-        --ink: #eef4ef;
-        --muted: #aab8ae;
-        --line: #3b4940;
-        --tile: #273029;
-        --tile-hover: #323d35;
-        --accent: #48b9a7;
-        --accent-strong: #76d2c4;
-        --accent-soft: #203f39;
-        --found-cell: #254536;
-        --found-cell-ink: #9addb7;
-        --yellow: #e2b73c;
-        --yellow-soft: #554718;
-        --key: #f0c34f;
-        --key-soft: #4a3b13;
-        --key-ink: #fff0c4;
-        --absent: #89958d;
-        --danger: #ef8175;
-        --shadow: 0 20px 50px rgba(0, 0, 0, .28);
-        --path: #8dd9cd;
-        --play-bg: #111a14;
-        --play-surface: #1a241d;
-        --play-tile: #29362d;
-        --play-tile-hover: #34443a;
+        color-scheme: light;
+        --bg: #f4f6f2;
+        --surface: #ffffff;
+        --ink: #17211c;
+        --muted: #5b665f;
+        --line: #cdd4cf;
+        --tile: #e7ece8;
+        --tile-hover: #dce4de;
+        --accent: #087f71;
+        --accent-strong: #05675c;
+        --accent-soft: #d7eeea;
+        --found-cell: #cbe7d4;
+        --found-cell-ink: #12613b;
+        --yellow: #c99712;
+        --yellow-soft: #f7e7ae;
+        --key: #b67c06;
+        --key-soft: #fff0ad;
+        --key-ink: #4d3500;
+        --absent: #6f7973;
+        --danger: #b4473c;
+        --shadow: 0 18px 44px rgba(28, 46, 37, .10);
+        --path: #173f38;
+        --play-bg: #edf2ee;
+        --play-surface: #fbfdfb;
+        --play-tile: #dce6df;
+        --play-tile-hover: #d0ddd4;
+        --finale-open: #fff;
+        --finale-open-hover: #f3f3f3;
+        --finale-open-border: #d6d6d6;
+        --finale-wall: #000;
+        --finale-wall-hover: #000;
+        --finale-wall-border: #000;
       }
-      body[data-theme="nature"] { --play-bg: #101b13; --play-surface: #19261c; --play-tile: #2a3e2d; --play-tile-hover: #36503a; }
-      body[data-theme="tech"] { --play-bg: #101820; --play-surface: #18232c; --play-tile: #293e4d; --play-tile-hover: #355064; }
-      body[data-theme="science"] { --play-bg: #0f1b1b; --play-surface: #182626; --play-tile: #294241; --play-tile-hover: #355553; }
-      body[data-theme="sports"] { --play-bg: #201610; --play-surface: #2b2018; --play-tile: #4a3526; --play-tile-hover: #5e4430; }
-      body[data-theme="food"] { --play-bg: #201611; --play-surface: #2b2019; --play-tile: #493526; --play-tile-hover: #5d4431; }
-      body[data-theme="coffee"] { --play-bg: #1d1612; --play-surface: #29201b; --play-tile: #44342a; --play-tile-hover: #574438; }
-      body[data-theme="music"] { --play-bg: #1e1419; --play-surface: #2a1d23; --play-tile: #472f3b; --play-tile-hover: #5a3c4b; }
-      body[data-theme="screen"] { --play-bg: #1b151e; --play-surface: #261e2a; --play-tile: #403448; --play-tile-hover: #51425b; }
-      body[data-theme="history"] { --play-bg: #1c1711; --play-surface: #282119; --play-tile: #423728; --play-tile-hover: #554735; }
-      body[data-theme="culture"] { --play-bg: #1f1516; --play-surface: #2a1e20; --play-tile: #463234; --play-tile-hover: #594043; }
-      body[data-theme="travel"] { --play-bg: #0f1b1d; --play-surface: #182528; --play-tile: #284248; --play-tile-hover: #34545b; }
-      body[data-theme="craft"] { --play-bg: #1d1712; --play-surface: #29211b; --play-tile: #44372c; --play-tile-hover: #57483a; }
-      body[data-theme="language"] { --play-bg: #151820; --play-surface: #1e232c; --play-tile: #343b4a; --play-tile-hover: #434c60; }
-      body[data-theme="ocean"] { --play-bg: #0d1a1e; --play-surface: #16252a; --play-tile: #25434b; --play-tile-hover: #305661; }
-      body[data-theme="winter"] { --play-bg: #131a1f; --play-surface: #1c252c; --play-tile: #303e49; --play-tile-hover: #3d505e; }
+      body[data-theme="nature"] { --play-bg: #e5eee4; --play-surface: #f8fbf7; --play-tile: #ccddca; --play-tile-hover: #bfd4bd; }
+      body[data-theme="tech"] { --play-bg: #e5edf3; --play-surface: #f8fbfd; --play-tile: #cbdbe7; --play-tile-hover: #bccfdd; }
+      body[data-theme="science"] { --play-bg: #e4efee; --play-surface: #f7fbfa; --play-tile: #c7dedb; --play-tile-hover: #b7d3cf; }
+      body[data-theme="sports"] { --play-bg: #f2e9e1; --play-surface: #fdfaf7; --play-tile: #e5cfbd; --play-tile-hover: #dcbfa8; }
+      body[data-theme="food"] { --play-bg: #f2e8df; --play-surface: #fdf9f5; --play-tile: #e6cdb9; --play-tile-hover: #dcbba1; }
+      body[data-theme="coffee"] { --play-bg: #eee6df; --play-surface: #fbf8f5; --play-tile: #d9c4b4; --play-tile-hover: #cdb3a0; }
+      body[data-theme="music"] { --play-bg: #f1e7eb; --play-surface: #fcf8fa; --play-tile: #e2c9d4; --play-tile-hover: #d7b7c5; }
+      body[data-theme="screen"] { --play-bg: #ece7ef; --play-surface: #faf8fb; --play-tile: #d9cce0; --play-tile-hover: #cdbbd6; }
+      body[data-theme="history"] { --play-bg: #eee8df; --play-surface: #fbf9f5; --play-tile: #d9cbb7; --play-tile-hover: #cdbba1; }
+      body[data-theme="culture"] { --play-bg: #f0e7e8; --play-surface: #fcf8f8; --play-tile: #e0cacc; --play-tile-hover: #d4b9bd; }
+      body[data-theme="travel"] { --play-bg: #e3eef0; --play-surface: #f7fbfb; --play-tile: #c4dce0; --play-tile-hover: #b3d0d5; }
+      body[data-theme="craft"] { --play-bg: #f0e9e2; --play-surface: #fcf9f6; --play-tile: #dfcdbd; --play-tile-hover: #d4bba7; }
+      body[data-theme="language"] { --play-bg: #e9ebf1; --play-surface: #f9fafc; --play-tile: #d4d9e5; --play-tile-hover: #c5ccdc; }
+      body[data-theme="ocean"] { --play-bg: #e1edef; --play-surface: #f6fbfc; --play-tile: #bfdae0; --play-tile-hover: #add0d8; }
+      body[data-theme="winter"] { --play-bg: #eaf0f3; --play-surface: #fafcfd; --play-tile: #d5e0e7; --play-tile-hover: #c6d5de; }
     }
     body.is-finale {
       --play-bg: var(--bg);
@@ -239,7 +253,11 @@
       overscroll-behavior: contain;
     }
     #pathSvg { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-    .path-segment { stroke: var(--path); stroke-width: 5; stroke-linecap: round; opacity: .82; }
+    .path-segment { stroke: var(--path); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; opacity: .82; }
+    .path-segment.gold-pass {
+      opacity: .96;
+      filter: drop-shadow(0 0 2px color-mix(in srgb, var(--key) 62%, transparent)) drop-shadow(0 0 4px color-mix(in srgb, var(--key) 28%, transparent));
+    }
     .tile {
       position: relative;
       z-index: 2;
@@ -272,8 +290,8 @@
     }
     .tile.thread-correct { background: var(--accent); color: #fff; border-color: var(--accent); }
     .tile.thread-absent { background: var(--absent); color: #fff; border-color: var(--absent); }
-    .tile.key-unlocking { animation: keyUnlock .68s cubic-bezier(.2,.9,.25,1); }
-    .tile.key-unlocking .tile-letter { animation: keyReveal .68s ease; }
+    .tile.key-unlocking { animation: goldBankPop .360s cubic-bezier(.2,.9,.25,1); }
+    .tile.key-unlocking .tile-letter { animation: keyReveal .360s ease; }
     .tile.obstacle {
       background: var(--absent);
       color: color-mix(in srgb, var(--surface) 68%, transparent);
@@ -291,30 +309,39 @@
     }
     .tile.obstacle:hover { background: var(--absent); }
     .tile.finale-open {
-      background: #fff;
+      background: var(--finale-open);
       color: transparent;
-      border-color: #d6d6d6;
+      border-color: var(--finale-open-border);
       box-shadow: none;
     }
-    .tile.finale-open:hover { background: #f3f3f3; }
+    .tile.finale-open:hover { background: var(--finale-open-hover); }
     .tile.obstacle.finale-obstacle {
-      background: #000;
+      background: var(--finale-wall);
       color: transparent;
-      border-color: #000;
-      box-shadow: none;
+      border-color: var(--finale-wall-border);
+      box-shadow: inset 0 0 0 1px rgba(17, 22, 18, .08);
       opacity: 1;
     }
-    .tile.obstacle.finale-obstacle::after { display: none; }
-    .tile.obstacle.finale-obstacle:hover { background: #000; }
+    .tile.obstacle.finale-obstacle::after {
+      display: block;
+      inset: 0;
+      border-radius: 8px;
+      background: repeating-linear-gradient(135deg, transparent 0 7px, var(--finale-wall-hatch) 7px 9px);
+    }
+    .tile.obstacle.finale-obstacle:hover { background: var(--finale-wall-hover); }
+    @media (prefers-color-scheme: light) {
+      .tile.obstacle.finale-obstacle { box-shadow: none; }
+      .tile.obstacle.finale-obstacle::after { display: none; }
+    }
     .tile.obstacle-locking {
       animation: trueTrailLock .62s cubic-bezier(.18,.82,.28,1) both;
       animation-delay: calc(var(--lock-step, 0) * 70ms);
     }
     .tile.obstacle-locking::after { animation: wallHatch .42s ease both; animation-delay: calc(var(--lock-step, 0) * 70ms + 140ms); }
     .tile.selected { background: var(--accent-soft); box-shadow: inset 0 0 0 3px var(--accent); }
-    .tile.correct { background: var(--accent); color: #fff; box-shadow: none; }
-    .tile.present { background: var(--yellow); color: #17130a; box-shadow: none; }
-    .tile.absent { background: var(--absent); color: #fff; box-shadow: none; }
+    .tile.correct { background: var(--accent); color: #fff; box-shadow: none; transition: none; }
+    .tile.present { background: var(--yellow); color: #17130a; box-shadow: none; transition: none; }
+    .tile.absent { background: var(--absent); color: #fff; box-shadow: none; transition: none; }
     .tile.invalid { animation: shake .28s ease; }
     .checkpoint {
       position: absolute;
@@ -409,7 +436,7 @@
       font-size: 12px;
       font-weight: 750;
     }
-    .key-letter.bank-just { animation: bankLetter .68s cubic-bezier(.2,.9,.25,1); }
+    .key-letter.bank-just { animation: bankLetter .360s cubic-bezier(.2,.9,.25,1); }
     .final-panel .game-top { margin-bottom: 12px; }
     .final-found {
       display: flex;
@@ -605,7 +632,7 @@
       font-weight: 750;
     }
     .demo-cell.on { background: var(--accent-soft); box-shadow: inset 0 0 0 3px var(--accent); }
-    .demo-cell.demo-finale-open { background: #fff; border-color: #d6d6d6; }
+    .demo-cell.demo-finale-open { background: var(--finale-open); border-color: var(--finale-open-border); }
     .demo-cell.demo-gold { border-color: var(--key); background: var(--key-soft); color: var(--key-ink); box-shadow: inset 0 -4px 0 rgba(77,53,0,.12); }
     .demo-cell.demo-pop { animation: demoGoldPop 1.15s cubic-bezier(.2,.9,.25,1) both; }
     .demo-order { position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; display: grid; place-items: center; border-radius: 50%; background: var(--key-ink); color: var(--key-soft); font-size: 8px; }
@@ -656,13 +683,12 @@
     @media (max-width: 390px) { .result-actions { grid-template-columns: 1fr; } }
 
     @keyframes shake { 0%,100% { transform: translateX(0); } 30% { transform: translateX(-4px); } 70% { transform: translateX(4px); } }
-    @keyframes keyUnlock {
+    @keyframes goldBankPop {
       0% { transform: scale(1); }
-      35% { transform: scale(.88) rotate(-3deg); box-shadow: inset 0 -4px 0 rgba(77, 53, 0, .12); }
-      68% { transform: scale(1.12) rotate(2deg); box-shadow: 0 0 0 6px rgba(201,151,18,.18); }
+      58% { transform: scale(1.16); box-shadow: 0 0 0 6px color-mix(in srgb, var(--key) 18%, transparent); }
       100% { transform: scale(1); }
     }
-    @keyframes keyReveal { 0%,42% { opacity: .25; transform: translateY(5px); } 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes keyReveal { 0%,42% { opacity: .35; transform: translateY(3px); } 100% { opacity: 1; transform: translateY(0); } }
     @keyframes trueTrailLock { 0% { opacity: .15; transform: scale(.82); } 58% { opacity: 1; transform: scale(1.06); } 100% { opacity: .78; transform: scale(1); } }
     @keyframes wallHatch { 0% { opacity: 0; } 100% { opacity: 1; } }
     @keyframes bankLetter { 0%,45% { opacity: .2; transform: scale(.7); } 75% { transform: scale(1.18); } 100% { opacity: 1; transform: scale(1); } }
@@ -806,7 +832,7 @@
             </div>
           </div>
           <div class="found-strip" id="foundStrip" aria-label="Five word rounds"></div>
-          <div class="finale-instruction" id="finaleInstruction" hidden>Trace the gold letters through white tiles. Bonus: shortest path possible.</div>
+          <div class="finale-instruction" id="finaleInstruction" hidden>Trace the gold letters through open tiles. Bonus: shortest path possible.</div>
           <div class="board-wrap" id="boardWrap">
             <svg id="pathSvg" aria-hidden="true">
               <defs><marker id="pathArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="var(--path)"></path></marker></defs>
@@ -8964,7 +8990,7 @@
       "Public facility to meet for open",
       "A place that attracts many visitors.",
       "Assumption that is taken",
-      "A slope down which sleds may.",
+      "Land along the sea",
       "Decoration made of the layout"
     ],
     "finalWord": "FAVOR",
@@ -23523,6 +23549,25 @@
     ]
   }
 ];
+      // The first three practice boards are intentionally simpler than the
+      // daily set. They reuse the proven 6×6 trail geometry without changing
+      // any daily puzzle, scoring rule, or finale behavior.
+      var practicePuzzles = puzzles.slice();
+      practicePuzzles[0] = Object.assign({}, puzzles[0], {
+        words:['BROKE','EMAIL','PLACE','OCCUR','THINK'],
+        clues:['Having no money.','Message sent over the internet.','A location or spot.','To happen.','Use your mind to form an idea.'],
+        finalWord:'BLACK'
+      });
+      practicePuzzles[1] = Object.assign({}, puzzles[1], {
+        words:['HUMAN','COMMA','SUPER','SPEND','SUNNY'],
+        clues:['A person.','Punctuation mark used to separate parts of a sentence.','Excellent or very good.','To pay money.','Bright with plenty of sunshine.'],
+        finalWord:'HAPPY'
+      });
+      practicePuzzles[2] = Object.assign({}, puzzles[2], {
+        words:['GROWN','OTHER','EVERY','BELOW','BROWN'],
+        clues:['Fully developed.','Not this one; a different one.','Each one without exception.','In a lower position.','The color of chocolate.'],
+        finalWord:'GREEN'
+      });
       // Difficulty is pre-rated from answer familiarity, clue directness, and
       // shortest Golden Thread length. Tier 1 is restricted to boards whose
       // five clue answers are all common, everyday English; the remaining
@@ -23560,9 +23605,14 @@
         goldCells:[0,2,6,9,15]
       };
       var dictionary = window.WORDZIP_DICTIONARY || new Set();
+      // Every clue answer is valid by definition, even when the bundled general
+      // lexicon omits a proper noun or specialized term used by a puzzle.
+      puzzles.concat(practicePuzzles.slice(0,3)).forEach(function(puzzle){
+        puzzle.words.forEach(function(word){dictionary.add(word);});
+      });
       var els = {};
       ['board','boardWrap','clue','roundLabel','status','timer','hintBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','foundStrip','finaleInstruction','guessHistory','keyRack','controls','modePicker','tutorialModal','tutorialCard','tutorialBtn','guideTutorialBtn','skipTutorial','demoBoard','demoWordPath','demoThreadPath','demoBank','tutorialStep','tutorialCaption'].forEach(function(id){ els[id]=document.getElementById(id); });
-      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode='daily', puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], roundIndex=0, roundGuesses=[], roundResults=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, hintReveals=[], hintsUsed=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
+      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode='daily', puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], roundIndex=0, roundGuesses=[], roundResults=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
       function clearTutorialTimers(){ tutorialTimers.forEach(function(timer){clearTimeout(timer);}); tutorialTimers=[]; }
       function tutorialLater(fn,delay){ tutorialTimers.push(setTimeout(fn,delay)); }
       function renderDemoBoard(letters,goldCells,hideOtherLetters){
@@ -23775,6 +23825,20 @@
         });
         for(var tier=1;tier<=7;tier++)if(tierCounts[tier]!==expectedTierCounts[tier])throw Error('Difficulty tier '+tier+' needs '+expectedTierCounts[tier]+' puzzles');
       }
+      function validateOnboardingPuzzles(){
+        practicePuzzles.slice(0,3).forEach(function(p,index){
+          if(p.words.length!==5||p.clues.length!==5||p.finalWord.length!==5)throw Error('Practice '+(index+1)+' must keep five rounds and a five-letter finale');
+          var testBoard=buildBoard(p), blocked=new Set(), protectedGold=new Set(p.keyPositions);
+          if(keyLettersFor(p,testBoard).slice().sort().join('')!==p.finalWord.split('').sort().join(''))throw Error('Practice '+(index+1)+' gold letters must form its finale word');
+          p.words.forEach(function(word,round){
+            var trail=p.canonicalPaths[round];
+            if(!validRoute(trail)||trail.map(function(cell){return testBoard[cell];}).join('')!==word)throw Error('Practice '+(index+1)+' round '+(round+1)+' needs a valid spelling trail');
+            if(!wordHasRouteOnBoard(word,blocked,testBoard))throw Error('Practice '+(index+1)+' walls seal off '+word);
+            trail.forEach(function(cell){if(!protectedGold.has(cell))blocked.add(cell);});
+          });
+          storeBoardPar(p,testBoard);
+        });
+      }
       function validateTutorialDemo(){
         var playableAnswers=new Set();
         puzzles.forEach(function(p){p.words.forEach(function(word){playableAnswers.add(word);});playableAnswers.add(p.finalWord);});
@@ -23843,14 +23907,14 @@
           activePuzzle=daily.puzzle;
           boardLetters=buildBoard(activePuzzle,seededRandom(daily.seed^0x9E3779B9));
         } else {
-          puzzleIndex=((Number(index)||0)+puzzles.length)%puzzles.length;
-          activePuzzle=puzzles[puzzleIndex];
+          puzzleIndex=((Number(index)||0)+practicePuzzles.length)%practicePuzzles.length;
+          activePuzzle=practicePuzzles[puzzleIndex];
           boardLetters=buildBoard(activePuzzle,seededRandom(hashString('WordZip-practice-'+puzzleIndex)));
         }
         var p=activePuzzle;
         applyTheme(false);
         storeBoardPar(p,boardLetters);
-        selected=[]; sealedPaths={}; roundIndex=0; roundGuesses=[]; roundResults=[]; totalWordGuesses=0; totalFinalGuesses=0; finalGuesses=[]; finaleAttemptHistory=[]; finalFeedback=null; hintReveals=p.words.map(function(){return [];}); hintsUsed=0; startedAt=null; gameOver=false; roundLocked=false; inFinal=false; finaleLockAt=-1; bankedAtFinaleWin=0; finalPathLength=0; unlockingChest=-1; lockingTrail=-1; finalScoreData=null;
+        selected=[]; sealedPaths={}; roundIndex=0; roundGuesses=[]; roundResults=[]; totalWordGuesses=0; totalFinalGuesses=0; finalGuesses=[]; finaleAttemptHistory=[]; finalFeedback=null; guessReveal=null; hintReveals=p.words.map(function(){return [];}); hintsUsed=0; startedAt=null; gameOver=false; roundLocked=false; inFinal=false; finaleLockAt=-1; bankedAtFinaleWin=0; finalPathLength=0; unlockingChest=-1; lockingTrail=-1; finalScoreData=null;
         if(timerHandle)clearInterval(timerHandle); timerHandle=null;
         els.timer.textContent='0:00';
         els.gameView.hidden=false; els.winView.hidden=true; els.keyRack.hidden=true; els.controls.classList.remove('final-mode');
@@ -23937,6 +24001,10 @@
           }
           if(finalFeedback&&keyIndex!==-1&&Object.prototype.hasOwnProperty.call(finalFeedback,i))tile.classList.add(finalFeedback[i]?'thread-correct':'thread-absent');
           else if(selected.indexOf(i)!==-1)tile.classList.add('selected');
+          if(guessReveal){
+            var revealStep=guessReveal.cells.indexOf(i);
+            if(revealStep!==-1)tile.classList.add(guessReveal.feedback[revealStep]);
+          }
           var row=Math.floor(i/BOARD_SIZE)+1, column=i%BOARD_SIZE+1, label;
           if(finalePlain)label=(blocked.has(i)?'Obstacle':'Open cell')+', row '+row+', column '+column;
           else {
@@ -23955,8 +24023,12 @@
         els.pathSegments.innerHTML='';
         for(var i=1;i<points.length;i++){
           var a=points[i-1],b=points[i],dx=b.x-a.x,dy=b.y-a.y,line=document.createElementNS('http://www.w3.org/2000/svg','line');
+          var touchesVisibleGold=[selected[i-1],selected[i]].some(function(cell){
+            var keyIndex=activePuzzle.keyPositions.indexOf(cell);
+            return keyIndex!==-1&&(inFinal||(roundResults[keyIndex]&&roundResults[keyIndex].banked));
+          });
           line.setAttribute('x1',a.x+dx*.24);line.setAttribute('y1',a.y+dy*.24);line.setAttribute('x2',a.x+dx*.70);line.setAttribute('y2',a.y+dy*.70);
-          line.setAttribute('class','path-segment');line.setAttribute('marker-end','url(#pathArrow)');els.pathSegments.appendChild(line);
+          line.setAttribute('class','path-segment'+(touchesVisibleGold?' gold-pass':''));line.setAttribute('marker-end','url(#pathArrow)');els.pathSegments.appendChild(line);
         }
       }
       function setStatus(msg,kind){ els.status.className='status'+(kind?' '+kind:''); els.status.textContent=msg; }
@@ -24025,27 +24097,33 @@
       }
       function submitGuess(){
         if(gameOver||roundLocked||inFinal)return;
-        var trace=tracedWord(),p=activePuzzle,target=p.words[roundIndex];
+        var trace=tracedWord(),p=activePuzzle,target=p.words[roundIndex],submittingRound=roundIndex;
         if(selected.length!==5){setStatus('Release after tracing exactly five connected tiles.','error');return;}
         if(!dictionary.has(trace)){selected=[];applyTiles();renderState();setStatus(trace+' is not a valid English word.','error');return;}
         startTimer();
-        var solved=trace===target;
-        roundGuesses.push({word:trace,feedback:standardFeedback(trace,target),solved:solved});
-        totalWordGuesses++; selected=[];
-        if(solved){
-          roundResults[roundIndex]={word:target,solved:true,banked:true};
-          unlockingChest=roundIndex; lockingTrail=roundIndex; sealedPaths[target]=p.canonicalPaths[roundIndex].slice(); roundLocked=true;
-          applyTiles();renderState();setStatus('Correct! Trail sealed. Golden '+keyLettersFor(p,boardLetters)[roundIndex]+' banked.','success');
-          setTimeout(function(){unlockingChest=-1;lockingTrail=-1;applyTiles();renderState();},900);
-          setTimeout(advanceRound,1200);
-          return;
-        }
-        if(roundGuesses.length>=MAX_ROUND_GUESSES){
-          roundLocked=true; roundResults[roundIndex]={word:target,solved:false,banked:false};
-          applyTiles(); renderState(); setStatus('Missed. The answer was '+target+'. No golden letter was revealed.','error');
-          setTimeout(advanceRound,1150); return;
-        }
-        applyTiles(); renderState(); setStatus('Valid guess. '+(MAX_ROUND_GUESSES-roundGuesses.length)+' left.','');
+        var solved=trace===target,feedback=standardFeedback(trace,target);
+        roundGuesses.push({word:trace,feedback:feedback,solved:solved});
+        totalWordGuesses++;
+        guessReveal={cells:selected.slice(),feedback:feedback.slice()}; roundLocked=true;
+        applyTiles(); renderState(); setStatus('Checking guess…','');
+        setTimeout(function(){
+          if(activePuzzle!==p||roundIndex!==submittingRound)return;
+          guessReveal=null; selected=[];
+          if(solved){
+            roundResults[roundIndex]={word:target,solved:true,banked:true};
+            unlockingChest=roundIndex; lockingTrail=roundIndex; sealedPaths[target]=p.canonicalPaths[roundIndex].slice();
+            applyTiles();renderState();setStatus('Correct! Trail sealed. Golden '+keyLettersFor(p,boardLetters)[roundIndex]+' banked.','success');
+            setTimeout(function(){if(activePuzzle!==p||roundIndex!==submittingRound)return;unlockingChest=-1;lockingTrail=-1;applyTiles();renderState();},400);
+            setTimeout(advanceRound,720);
+            return;
+          }
+          if(roundGuesses.length>=MAX_ROUND_GUESSES){
+            roundResults[roundIndex]={word:target,solved:false,banked:false};
+            applyTiles(); renderState(); setStatus('Missed. The answer was '+target+'. No golden letter was revealed.','error');
+            setTimeout(advanceRound,1150); return;
+          }
+          roundLocked=false; applyTiles(); renderState(); setStatus('Valid guess. '+(MAX_ROUND_GUESSES-roundGuesses.length)+' left.','');
+        },480);
       }
       function advanceRound(){
         var p=activePuzzle;
@@ -24162,7 +24240,7 @@
       els.guideTutorialBtn.addEventListener('click',function(){els.helpModal.classList.remove('open');els.tutorialBtn.focus();showTutorial(false);});
       els.helpModal.addEventListener('click',function(e){if(e.target===els.helpModal)els.helpModal.classList.remove('open');});
       document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(els.tutorialModal.classList.contains('open'))closeTutorial();else els.helpModal.classList.remove('open');});
-      validatePuzzles();validateTutorialDemo();showTutorial(true);
+      validatePuzzles();validateOnboardingPuzzles();validateTutorialDemo();showTutorial(true);
     })();
   </script>
 
