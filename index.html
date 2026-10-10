@@ -23649,7 +23649,7 @@
       });
       var els = {};
       ['board','boardWrap','clue','currentHint','roundLabel','prevRoundBtn','nextRoundBtn','status','timer','hintBtn','skipBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','finaleInstruction','guessHistory','keyRack','controls','modePicker','tutorialModal','tutorialCard','tutorialBtn','guideTutorialBtn','skipTutorial','demoBoard','demoWordPath','demoThreadPath','demoBank','demoRoundLabel','demoClue','demoFeedback','demoNavHint','tutorialStep','tutorialCaption'].forEach(function(id){ els[id]=document.getElementById(id); });
-      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode='daily', puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
+      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode='daily', puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], traceStatusSnapshot=null, roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
       function clearTutorialTimers(){ tutorialTimers.forEach(function(timer){clearTimeout(timer);}); tutorialTimers=[]; }
       function tutorialLater(fn,delay){ tutorialTimers.push(setTimeout(fn,delay)); }
       function renderDemoBoard(letters,goldCells,hideOtherLetters){
@@ -24051,6 +24051,7 @@
       }
       function handleTile(index){
         if(gameOver||roundLocked)return;
+        if(!selected.length)traceStatusSnapshot={className:els.status.className,textContent:els.status.textContent};
         if(obstacleCells().has(index)){reject(index,'That sealed true trail is a wall. Route around it.');return;}
         // Clue guesses keep their forgiving one-step undo. The Golden Thread is
         // Zip-pure: every cell may appear at most once in its continuous route.
@@ -24167,10 +24168,9 @@
         els.prevRoundBtn.setAttribute('aria-label',prev===-1?'No previous available round':'Go to round '+(prev+1));
         els.nextRoundBtn.setAttribute('aria-label',next===-1?'No next available round':'Go to round '+(next+1));
       }
-      function unresolvedOtherRoundForWord(word,currentRound){
+      function otherRoundForWord(word,currentRound){
         return activePuzzle.words.findIndex(function(answer,index){
-          var result=roundResults[index];
-          return index!==currentRound&&!(result&&result.solved)&&answer===word;
+          return index!==currentRound&&answer===word;
         });
       }
       function renderState(){
@@ -24289,13 +24289,19 @@
         var trace=tracedWord(),p=activePuzzle,submittingRound=roundIndex,target=p.words[submittingRound];
         if(selected.length!==5){setStatus('Release after tracing exactly five connected tiles.','error');return;}
         if(!dictionary.has(trace)){selected=[];applyTiles();renderState();setStatus(trace+' is not a valid English word.','error');return;}
+        var solved=trace===target, outOfOrderRound=otherRoundForWord(trace,submittingRound);
+        // Answers for non-active rounds are ignored completely: they consume no
+        // guess, reveal no feedback or gold, and do not move between rounds.
+        if(outOfOrderRound!==-1){
+          var priorStatus=traceStatusSnapshot;
+          selected=[]; traceStatusSnapshot=null; applyTiles(); renderState();
+          if(priorStatus){els.status.className=priorStatus.className;els.status.textContent=priorStatus.textContent;}
+          return;
+        }
+        traceStatusSnapshot=null;
         startTimer();
-        var solved=trace===target, outOfOrderRound=unresolvedOtherRoundForWord(trace,submittingRound);
-        // An answer belonging to another unfinished round is still a wrong
-        // attempt here, but receives neutral feedback so it cannot expose that
-        // round's gold letter or remain visible in the guess history.
-        var feedback=outOfOrderRound===-1?standardFeedback(trace,target):new Array(5).fill('absent');
-        roundGuesses.push({word:trace,feedback:feedback,solved:solved,hidden:outOfOrderRound!==-1});
+        var feedback=standardFeedback(trace,target);
+        roundGuesses.push({word:trace,feedback:feedback,solved:solved});
         totalWordGuesses++;
         guessReveal={cells:selected.slice(),feedback:feedback.slice()}; roundLocked=true;
         applyTiles(); renderState(); setStatus('Checking guess…','');
