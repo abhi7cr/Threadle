@@ -645,6 +645,18 @@
     .header-auth-action:disabled { opacity: .48; cursor: default; }
     .header-auth-user { min-width: 0; margin-bottom: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 750; }
     .header-auth-status { min-height: 14px; margin-top: 7px; color: var(--danger); font-size: 9px; line-height: 1.3; text-align: center; }
+    .header-greeting {
+      max-width: 100%;
+      margin: -7px 0 10px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.35;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .header-greeting[hidden] { display: none; }
     .guide-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
     .modal .replay-demo { min-height: 46px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-soft); color: var(--accent-strong); cursor: pointer; font-weight: 750; }
     .leaderboard-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 16px 0 14px; }
@@ -1064,6 +1076,7 @@
               <button class="icon-button" id="helpBtn" type="button" aria-label="Open rules guide">?</button>
             </div>
           </div>
+          <div class="header-greeting" id="headerGreeting" hidden></div>
           <div class="finale-instruction" id="finaleInstruction" hidden>Trace the gold letters through open tiles. Bonus: shortest path possible.</div>
           <div class="board-wrap" id="boardWrap">
             <svg id="pathSvg" aria-hidden="true">
@@ -23870,7 +23883,7 @@
         puzzle.words.forEach(function(word){dictionary.add(word);});
       });
       var els = {};
-      ['board','boardWrap','clue','currentHint','roundLabel','prevRoundBtn','nextRoundBtn','status','timer','hintBtn','skipBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','finaleInstruction','guessHistory','keyRack','controls','modePicker','tutorialModal','tutorialCard','tutorialBtn','guideTutorialBtn','skipTutorial','demoBoard','demoWordPath','demoThreadPath','demoBank','demoRoundLabel','demoClue','demoFeedback','demoNavHint','tutorialStep','tutorialCaption','leaderboardBtn','leaderboardModal','leaderboardList','dailyLeaderboardTab','allTimeLeaderboardTab','closeLeaderboard','headerAuthBtn','authPopover','headerAuthContent','headerAuthStatus','dailyGate'].forEach(function(id){ els[id]=document.getElementById(id); });
+      ['board','boardWrap','clue','currentHint','roundLabel','prevRoundBtn','nextRoundBtn','status','timer','hintBtn','skipBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','finaleInstruction','guessHistory','keyRack','controls','modePicker','tutorialModal','tutorialCard','tutorialBtn','guideTutorialBtn','skipTutorial','demoBoard','demoWordPath','demoThreadPath','demoBank','demoRoundLabel','demoClue','demoFeedback','demoNavHint','tutorialStep','tutorialCaption','leaderboardBtn','leaderboardModal','leaderboardList','dailyLeaderboardTab','allTimeLeaderboardTab','closeLeaderboard','headerAuthBtn','authPopover','headerAuthContent','headerAuthStatus','headerGreeting','dailyGate'].forEach(function(id){ els[id]=document.getElementById(id); });
       var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode='daily', puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], traceStatusSnapshot=null, roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
       var SUPABASE_URL='https://uczjzlvjissypvrbgvuj.supabase.co', SUPABASE_KEY='sb_publishable_faOzZtHKkVlmpG_1LOzABQ_IYKcwv7Z';
       var PENDING_SCORE_KEY='threadle_pending_score';
@@ -23897,6 +23910,10 @@
         if(els.headerAuthStatus)els.headerAuthStatus.textContent=message||'';
       }
       function renderHeaderAuth(){
+        if(els.headerGreeting){
+          els.headerGreeting.textContent=authUser?'Welcome, '+playerName(authUser):'';
+          els.headerGreeting.hidden=!authUser;
+        }
         if(!els.headerAuthBtn)return;
         els.headerAuthBtn.innerHTML='';
         els.headerAuthBtn.classList.toggle('is-user',!!authUser);
