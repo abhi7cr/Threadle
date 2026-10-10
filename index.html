@@ -797,6 +797,20 @@
       font-size: 12px;
     }
     .daily-gate-button.secondary { border-color: var(--line); background: transparent; color: var(--ink); }
+    .daily-gate-menu {
+      min-height: 34px;
+      margin-top: 4px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 650;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .daily-gate-menu:hover { color: var(--accent-strong); }
+    .daily-gate-menu:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
     .daily-gate-button svg { width: 17px; height: 17px; fill: currentColor; }
     .daily-gate-button .google-mark { fill: none; }
     .daily-gate-button:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
@@ -1039,14 +1053,14 @@
   <main class="app">
     <section class="layout">
       <section class="game-card" aria-label="Threadle puzzle">
-        <nav class="mode-picker" id="modePicker" aria-label="Puzzle mode">
-          <button type="button" data-mode="daily" aria-pressed="true">Daily</button>
+        <nav class="mode-picker" id="modePicker" aria-label="Puzzle menu">
+          <button type="button" data-mode="daily" aria-pressed="false">Daily</button>
           <button type="button" data-mode="practice" data-index="0" aria-pressed="false">Practice 1</button>
           <button type="button" data-mode="practice" data-index="1" aria-pressed="false">Practice 2</button>
           <button type="button" data-mode="practice" data-index="2" aria-pressed="false">Practice 3</button>
         </nav>
         <div class="daily-gate" id="dailyGate" hidden aria-live="polite"></div>
-        <div id="gameView">
+        <div id="gameView" hidden>
           <div class="play-statusbar" aria-label="Puzzle status">
             <div class="play-stat"><strong id="guessBudget">6</strong><span>left</span></div>
             <div class="play-stat"><strong id="hintsUsedCount">0</strong><span>hints</span></div>
@@ -23884,7 +23898,7 @@
       });
       var els = {};
       ['board','boardWrap','clue','currentHint','roundLabel','prevRoundBtn','nextRoundBtn','status','timer','hintBtn','skipBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','finaleInstruction','guessHistory','keyRack','controls','modePicker','tutorialModal','tutorialCard','tutorialBtn','guideTutorialBtn','skipTutorial','demoBoard','demoWordPath','demoThreadPath','demoBank','demoRoundLabel','demoClue','demoFeedback','demoNavHint','tutorialStep','tutorialCaption','leaderboardBtn','leaderboardModal','leaderboardList','dailyLeaderboardTab','allTimeLeaderboardTab','closeLeaderboard','headerAuthBtn','authPopover','headerAuthContent','headerAuthStatus','headerGreeting','dailyGate'].forEach(function(id){ els[id]=document.getElementById(id); });
-      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode='daily', puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], traceStatusSnapshot=null, roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
+      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode=null, puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], traceStatusSnapshot=null, roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
       var SUPABASE_URL='https://uczjzlvjissypvrbgvuj.supabase.co', SUPABASE_KEY='sb_publishable_faOzZtHKkVlmpG_1LOzABQ_IYKcwv7Z';
       var PENDING_SCORE_KEY='threadle_pending_score';
       var supabaseClient=null, authUser=null, authReady=false, submittedBoards=new Set(), submittingBoards=new Set(), attemptedBoards=new Set(), leaderboardScope='daily', leaderboardRequest=0, resultsLeaderboardRequest=0, dailyGateRequest=0, leaderboardReturnFocus=null;
@@ -24095,7 +24109,7 @@
       function closeTutorial(){
         if(!els.tutorialModal.classList.contains('open'))return;
         clearTutorialTimers(); els.tutorialModal.classList.remove('open'); els.tutorialCard.className='tutorial-card';
-        if(!gameInitialized){gameInitialized=true;setupPuzzle('daily',0);}
+        if(!gameInitialized){gameInitialized=true;showPuzzleMenu();}
         else if(tutorialReturnFocus&&tutorialReturnFocus.focus)tutorialReturnFocus.focus();
       }
       function adjacent(a,b){ var ar=Math.floor(a/BOARD_SIZE),ac=a%BOARD_SIZE,br=Math.floor(b/BOARD_SIZE),bc=b%BOARD_SIZE; return Math.abs(ar-br)+Math.abs(ac-bc)===1; }
@@ -24369,7 +24383,7 @@
       function renderModePicker(){
         Array.prototype.forEach.call(els.modePicker.querySelectorAll('button'),function(button){
           var isPractice=button.dataset.mode==='practice', index=Number(button.dataset.index||0);
-          var active=puzzleMode==='daily'?button.dataset.mode==='daily':isPractice&&index===puzzleIndex;
+          var active=puzzleMode==='daily'?button.dataset.mode==='daily':puzzleMode==='practice'&&isPractice&&index===puzzleIndex;
           button.setAttribute('aria-pressed',active?'true':'false');
           if(button.dataset.mode==='daily')button.textContent='Daily '+dailyKey.slice(5).replace('-','/');
         });
@@ -24385,6 +24399,23 @@
       function applyTheme(finale){
         document.body.dataset.theme=themeKind(activePuzzle);
         document.body.classList.toggle('is-finale',!!finale);
+      }
+      function showPuzzleMenu(restoreFocus){
+        dailyGateRequest++;
+        puzzleMode=null;
+        activePuzzle=null;
+        if(timerHandle)clearInterval(timerHandle);
+        timerHandle=null;
+        document.body.removeAttribute('data-theme');
+        document.body.classList.remove('is-finale');
+        els.dailyGate.hidden=true;
+        els.gameView.hidden=true;
+        els.winView.hidden=true;
+        renderModePicker();
+        if(restoreFocus){
+          var practiceButton=els.modePicker.querySelector('button[data-mode="practice"]');
+          if(practiceButton)practiceButton.focus();
+        }
       }
       function dailyGateOAuth(event){
         var button=event.currentTarget,provider=button.getAttribute('data-provider')||'github',buttons=els.dailyGate.querySelectorAll('button'),label=provider==='google'?'Sign in with Google':'Sign in with GitHub';
@@ -24405,14 +24436,15 @@
       }
       function renderDailyGateSignIn(){
         els.gameView.hidden=true;els.winView.hidden=true;els.dailyGate.hidden=false;
-        els.dailyGate.innerHTML='<div class="daily-gate-panel"><h2>Sign in to play today’s puzzle</h2><div class="daily-gate-actions"><button class="daily-gate-button" type="button" data-provider="github"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.42c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.57-.3-5.27-1.29-5.27-5.69 0-1.26.45-2.29 1.2-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.17 1.18a10.95 10.95 0 0 1 5.78 0c2.2-1.5 3.17-1.18 3.17-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg><span>Sign in with GitHub</span></button><button class="daily-gate-button" type="button" data-provider="google"><svg class="google-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-1.99 3.02v2.54h3.23c1.89-1.74 2.98-4.31 2.98-7.41Z"/><path fill="#34A853" d="M12 22c2.7 0 4.96-.89 6.62-2.36l-3.23-2.54c-.9.6-2.04.96-3.39.96-2.6 0-4.8-1.75-5.59-4.11H3.08v2.62A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.41 13.95A6.02 6.02 0 0 1 6.1 12c0-.68.12-1.34.31-1.95V7.43H3.08A10 10 0 0 0 2 12c0 1.61.38 3.14 1.08 4.57l3.33-2.62Z"/><path fill="#EA4335" d="M12 5.94c1.47 0 2.79.51 3.83 1.5l2.87-2.88A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.92 5.43l3.33 2.62C7.2 7.69 9.4 5.94 12 5.94Z"/></svg><span>Sign in with Google</span></button></div><div class="daily-gate-status" aria-live="polite"></div></div>';
+        els.dailyGate.innerHTML='<div class="daily-gate-panel"><h2>Sign in to play today’s puzzle</h2><div class="daily-gate-actions"><button class="daily-gate-button" type="button" data-provider="github"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.42c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.57-.3-5.27-1.29-5.27-5.69 0-1.26.45-2.29 1.2-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.17 1.18a10.95 10.95 0 0 1 5.78 0c2.2-1.5 3.17-1.18 3.17-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg><span>Sign in with GitHub</span></button><button class="daily-gate-button" type="button" data-provider="google"><svg class="google-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-1.99 3.02v2.54h3.23c1.89-1.74 2.98-4.31 2.98-7.41Z"/><path fill="#34A853" d="M12 22c2.7 0 4.96-.89 6.62-2.36l-3.23-2.54c-.9.6-2.04.96-3.39.96-2.6 0-4.8-1.75-5.59-4.11H3.08v2.62A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.41 13.95A6.02 6.02 0 0 1 6.1 12c0-.68.12-1.34.31-1.95V7.43H3.08A10 10 0 0 0 2 12c0 1.61.38 3.14 1.08 4.57l3.33-2.62Z"/><path fill="#EA4335" d="M12 5.94c1.47 0 2.79.51 3.83 1.5l2.87-2.88A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.92 5.43l3.33 2.62C7.2 7.69 9.4 5.94 12 5.94Z"/></svg><span>Sign in with Google</span></button><button class="daily-gate-menu" type="button" data-menu>Try a practice puzzle instead</button></div><div class="daily-gate-status" aria-live="polite"></div></div>';
         Array.prototype.forEach.call(els.dailyGate.querySelectorAll('[data-provider]'),function(button){button.addEventListener('click',dailyGateOAuth);});
+        els.dailyGate.querySelector('[data-menu]').addEventListener('click',function(){showPuzzleMenu(true);});
       }
       function renderDailyGateError(){
         els.gameView.hidden=true;els.winView.hidden=true;els.dailyGate.hidden=false;
         els.dailyGate.innerHTML='<div class="daily-gate-panel"><h2>Leaderboard unavailable</h2><p>Couldn’t reach the server — try again</p><div class="daily-gate-actions"><button class="daily-gate-button" type="button" data-retry>Retry</button><button class="daily-gate-button secondary" type="button" data-practice>Back to puzzle menu</button></div></div>';
         els.dailyGate.querySelector('[data-retry]').addEventListener('click',gateDailyPuzzle);
-        els.dailyGate.querySelector('[data-practice]').addEventListener('click',function(){setupPuzzle('practice',0);});
+        els.dailyGate.querySelector('[data-practice]').addEventListener('click',function(){showPuzzleMenu(true);});
       }
       function renderStoredDailyResult(row){
         puzzleMode='daily';finalScoreData={score:Number(row.score)||0,hints:Number(row.hints)||0,skips:Number(row.skips)||0,timeSeconds:Math.max(0,Number(row.time_seconds)||0)};
@@ -25071,7 +25103,8 @@
       document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!els.authPopover.hidden)closeHeaderAuth(true);else if(els.tutorialModal.classList.contains('open'))closeTutorial();else if(els.leaderboardModal.classList.contains('open'))closeLeaderboard();else els.helpModal.classList.remove('open');});
       validatePuzzles();validateOnboardingPuzzles();validateTutorialDemo();initAuth();
       var oauthReturn=/(?:[?#&])(code|access_token|refresh_token)=/.test(window.location.search+window.location.hash);
-      if(oauthReturn){gameInitialized=true;setupPuzzle('daily',0);}else showTutorial(true);
+      gameInitialized=true;
+      if(oauthReturn)setupPuzzle('daily',0);else showPuzzleMenu(false);
     })();
   </script>
 
