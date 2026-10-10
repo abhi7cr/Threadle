@@ -142,6 +142,22 @@
     }
     body.is-menu .mode-picker { margin-bottom: 0; }
     .layout { display: block; }
+    .site-footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1.4;
+      text-align: center;
+    }
+    body.is-menu .app { position: relative; }
+    body.is-menu .site-footer {
+      position: absolute;
+      right: clamp(12px, 3vw, 26px);
+      bottom: max(10px, env(safe-area-inset-bottom));
+      left: clamp(12px, 3vw, 26px);
+      margin-top: 0;
+    }
     .icon-button {
       border: 0;
       background: transparent;
@@ -172,6 +188,7 @@
       gap: 5px;
       margin-bottom: 10px;
     }
+    .mode-picker[hidden] { display: none; }
     .mode-picker button {
       min-width: 0;
       min-height: 32px;
@@ -1126,6 +1143,7 @@
         <div id="winView" class="win-panel" hidden></div>
       </section>
     </section>
+    <footer class="site-footer">© 2026 Abhishek Raj. All rights reserved.</footer>
   </main>
 
   <div class="modal-backdrop" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
@@ -23916,7 +23934,7 @@
       var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode=null, puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], traceStatusSnapshot=null, roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
       var SUPABASE_URL='https://uczjzlvjissypvrbgvuj.supabase.co', SUPABASE_KEY='sb_publishable_faOzZtHKkVlmpG_1LOzABQ_IYKcwv7Z';
       var PENDING_SCORE_KEY='threadle_pending_score';
-      var supabaseClient=null, leaderboardClient=null, authUser=null, authReady=false, submittedBoards=new Set(), submittingBoards=new Set(), attemptedBoards=new Set(), leaderboardScope='daily', leaderboardRequest=0, resultsLeaderboardRequest=0, dailyGateRequest=0, leaderboardReturnFocus=null;
+      var supabaseClient=null, leaderboardClient=null, authUser=null, authReady=false, submittedBoards=new Set(), submittingBoards=new Set(), attemptedBoards=new Set(), leaderboardScope='daily', leaderboardRequest=0, resultsLeaderboardRequest=0, dailyGateRequest=0, leaderboardReturnFocus=null, initialSessionPending=false;
       try {
         if(window.supabase&&window.supabase.createClient){
           supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
@@ -24045,6 +24063,7 @@
         clearTutorialTimers();
         els.tutorialModal.classList.remove('open');
         gameInitialized=true;
+        els.modePicker.hidden=false;
         els.gameView.hidden=true;
         els.winView.hidden=false;
         els.winView.innerHTML='<div class="win-mark">✓</div><h2>Score ready</h2><p>You\'re signed in. Here\'s the '+(puzzleMode==='daily'?'daily':'practice')+' score you just earned.</p><div class="score-total">'+Number(finalScoreData.score||0)+'<span>Total points</span></div>'+scoreSubmitMarkup()+resultsLeaderboardMarkup()+'<div class="result-actions"><button class="play-next" type="button">Back to puzzle</button></div>';
@@ -24062,20 +24081,22 @@
         }
         renderScoreSubmit();
         fetchResultsLeaderboard();
-        if(gameInitialized&&puzzleMode==='daily'&&!els.dailyGate.hidden)gateDailyPuzzle();
+        if(!initialSessionPending&&gameInitialized&&puzzleMode==='daily'&&!els.dailyGate.hidden)gateDailyPuzzle();
       }
-      function initAuth(){
+      function initAuth(onInitialSession){
         renderHeaderAuth();
-        if(!supabaseClient){authReady=true;renderHeaderAuth();renderScoreSubmit();return;}
+        if(!supabaseClient){authReady=true;renderHeaderAuth();renderScoreSubmit();if(onInitialSession)onInitialSession(null,true);return;}
         try {
           supabaseClient.auth.onAuthStateChange(function(event,session){
             syncAuthUser(session&&session.user);
           });
           Promise.resolve(supabaseClient.auth.getSession()).then(function(result){
-            var session=result&&result.data&&result.data.session;
-            syncAuthUser(session&&session.user);
-          }).catch(function(){authReady=true;renderHeaderAuth();renderScoreSubmit();});
-        } catch (error) { supabaseClient=null;authReady=true;renderHeaderAuth();renderScoreSubmit(); }
+            if(!result||result.error)throw result&&result.error?result.error:Error('Session unavailable');
+            var session=result.data&&result.data.session,user=session&&session.user;
+            syncAuthUser(user);
+            if(onInitialSession)onInitialSession(user||null,false);
+          }).catch(function(){authReady=true;renderHeaderAuth();renderScoreSubmit();if(onInitialSession)onInitialSession(null,true);});
+        } catch (error) { supabaseClient=null;authReady=true;renderHeaderAuth();renderScoreSubmit();if(onInitialSession)onInitialSession(null,true); }
       }
       function clearTutorialTimers(){ tutorialTimers.forEach(function(timer){clearTimeout(timer);}); tutorialTimers=[]; }
       function tutorialLater(fn,delay){ tutorialTimers.push(setTimeout(fn,delay)); }
@@ -24435,6 +24456,7 @@
         document.body.removeAttribute('data-theme');
         document.body.classList.remove('is-finale');
         document.body.classList.add('is-menu');
+        els.modePicker.hidden=false;
         els.dailyGate.hidden=true;
         els.gameView.hidden=true;
         els.winView.hidden=true;
@@ -24458,24 +24480,24 @@
         });
       }
       function renderDailyGateLoading(message){
-        els.gameView.hidden=true;els.winView.hidden=true;els.dailyGate.hidden=false;
+        els.modePicker.hidden=true;els.gameView.hidden=true;els.winView.hidden=true;els.dailyGate.hidden=false;
         els.dailyGate.innerHTML='<div class="daily-gate-panel"><div class="daily-gate-spinner" aria-hidden="true"></div><p>'+String(message||'Checking sign-in…')+'</p></div>';
       }
       function renderDailyGateSignIn(){
-        els.gameView.hidden=true;els.winView.hidden=true;els.dailyGate.hidden=false;
+        els.modePicker.hidden=true;els.gameView.hidden=true;els.winView.hidden=true;els.dailyGate.hidden=false;
         els.dailyGate.innerHTML='<div class="daily-gate-panel"><h2>Sign in to play today’s puzzle</h2><div class="daily-gate-actions"><button class="daily-gate-button" type="button" data-provider="github"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.42c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.4-1.26.74-1.55-2.57-.3-5.27-1.29-5.27-5.69 0-1.26.45-2.29 1.2-3.1-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.17 1.18a10.95 10.95 0 0 1 5.78 0c2.2-1.5 3.17-1.18 3.17-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.42-2.71 5.39-5.29 5.68.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg><span>Sign in with GitHub</span></button><button class="daily-gate-button" type="button" data-provider="google"><svg class="google-mark" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-1.99 3.02v2.54h3.23c1.89-1.74 2.98-4.31 2.98-7.41Z"/><path fill="#34A853" d="M12 22c2.7 0 4.96-.89 6.62-2.36l-3.23-2.54c-.9.6-2.04.96-3.39.96-2.6 0-4.8-1.75-5.59-4.11H3.08v2.62A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.41 13.95A6.02 6.02 0 0 1 6.1 12c0-.68.12-1.34.31-1.95V7.43H3.08A10 10 0 0 0 2 12c0 1.61.38 3.14 1.08 4.57l3.33-2.62Z"/><path fill="#EA4335" d="M12 5.94c1.47 0 2.79.51 3.83 1.5l2.87-2.88A9.62 9.62 0 0 0 12 2a10 10 0 0 0-8.92 5.43l3.33 2.62C7.2 7.69 9.4 5.94 12 5.94Z"/></svg><span>Sign in with Google</span></button><p class="privacy-note">We store your username, avatar, score, and game stats for the leaderboard. That\'s it.</p><button class="daily-gate-menu" type="button" data-menu>Try a practice puzzle instead</button></div><div class="daily-gate-status" aria-live="polite"></div></div>';
         Array.prototype.forEach.call(els.dailyGate.querySelectorAll('[data-provider]'),function(button){button.addEventListener('click',dailyGateOAuth);});
         els.dailyGate.querySelector('[data-menu]').addEventListener('click',function(){setupPuzzle('practice',0);});
       }
       function renderDailyGateError(){
-        els.gameView.hidden=true;els.winView.hidden=true;els.dailyGate.hidden=false;
+        els.modePicker.hidden=true;els.gameView.hidden=true;els.winView.hidden=true;els.dailyGate.hidden=false;
         els.dailyGate.innerHTML='<div class="daily-gate-panel"><h2>Leaderboard unavailable</h2><p>Couldn’t reach the server — try again</p><div class="daily-gate-actions"><button class="daily-gate-button" type="button" data-retry>Retry</button><button class="daily-gate-button secondary" type="button" data-practice>Back to puzzle menu</button></div></div>';
         els.dailyGate.querySelector('[data-retry]').addEventListener('click',gateDailyPuzzle);
         els.dailyGate.querySelector('[data-practice]').addEventListener('click',function(){showPuzzleMenu(true);});
       }
       function renderStoredDailyResult(row){
         puzzleMode='daily';finalScoreData={score:Number(row.score)||0,hints:Number(row.hints)||0,skips:Number(row.skips)||0,timeSeconds:Math.max(0,Number(row.time_seconds)||0)};
-        els.dailyGate.hidden=true;els.gameView.hidden=true;els.winView.hidden=false;renderModePicker();
+        els.modePicker.hidden=false;els.dailyGate.hidden=true;els.gameView.hidden=true;els.winView.hidden=false;renderModePicker();
         els.winView.innerHTML='<div class="win-mark">✓</div><h2>Today’s result</h2><p>You’ve already played today’s puzzle.</p><div class="score-total">'+finalScoreData.score+'<span>Total points</span></div><div class="win-stats"><div class="stat"><strong>'+formatTime(finalScoreData.timeSeconds)+'</strong><span>Time</span></div><div class="stat"><strong>'+finalScoreData.hints+'</strong><span>Hints</span></div><div class="stat"><strong>'+finalScoreData.skips+'</strong><span>Skips</span></div></div>'+resultsLeaderboardMarkup()+'<div class="result-actions"><button class="play-next" type="button">Practice 1</button></div>';
         renderResultsLeaderboard();els.winView.querySelector('.play-next').addEventListener('click',function(){setupPuzzle('practice',0);});
       }
@@ -24527,7 +24549,7 @@
         selected=[]; sealedPaths={}; roundIndex=0; roundGuessHistory=p.words.map(function(){return [];}); roundGuesses=roundGuessHistory[0]; roundResults=[]; skippedRounds=p.words.map(function(){return false;}); visitedRounds=p.words.map(function(word,index){return index===0;}); totalWordGuesses=0; totalFinalGuesses=0; finalGuesses=[]; finaleAttemptHistory=[]; finalFeedback=null; guessReveal=null; hintReveals=p.words.map(function(){return [];}); hintsUsed=0; skipCount=0; startedAt=null; gameOver=false; roundLocked=false; inFinal=false; finaleLockAt=-1; bankedAtFinaleWin=0; finalPathLength=0; unlockingChest=-1; lockingTrail=-1; finalScoreData=null;
         if(timerHandle)clearInterval(timerHandle); timerHandle=null;
         els.timer.textContent='0:00';
-        els.dailyGate.hidden=true; els.gameView.hidden=false; els.winView.hidden=true; els.keyRack.hidden=true; els.controls.classList.remove('final-mode');
+        els.modePicker.hidden=false; els.dailyGate.hidden=true; els.gameView.hidden=false; els.winView.hidden=true; els.keyRack.hidden=true; els.controls.classList.remove('final-mode');
         renderModePicker(); renderBoard(); renderState(); setStatus('Trace a five-letter answer. Win to reveal its golden letter.','');
         startedAt=Date.now(); timerHandle=setInterval(updateTimer,1000);
       }
@@ -25130,10 +25152,24 @@
       els.helpModal.addEventListener('click',function(e){if(e.target===els.helpModal)els.helpModal.classList.remove('open');});
       document.addEventListener('click',function(e){if(!els.authPopover.hidden&&!e.target.closest('.header-auth'))closeHeaderAuth(false);});
       document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;if(!els.authPopover.hidden)closeHeaderAuth(true);else if(els.tutorialModal.classList.contains('open'))closeTutorial();else if(els.leaderboardModal.classList.contains('open'))closeLeaderboard();else els.helpModal.classList.remove('open');});
-      validatePuzzles();validateOnboardingPuzzles();validateTutorialDemo();initAuth();
+      validatePuzzles();validateOnboardingPuzzles();validateTutorialDemo();
       var oauthReturn=/(?:[?#&])(code|access_token|refresh_token)=/.test(window.location.search+window.location.hash);
       gameInitialized=true;
-      if(oauthReturn)setupPuzzle('daily',0);else showPuzzleMenu(false);
+      if(oauthReturn){
+        initAuth();
+        setupPuzzle('daily',0);
+      } else {
+        document.body.classList.remove('is-menu');
+        puzzleMode='daily';
+        renderModePicker();
+        renderDailyGateLoading('Checking sign-in…');
+        initialSessionPending=true;
+        initAuth(function(user){
+          initialSessionPending=false;
+          if(user){showPuzzleMenu(false);return;}
+          renderDailyGateSignIn();
+        });
+      }
     })();
   </script>
 
