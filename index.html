@@ -861,9 +861,9 @@
         <li>Each of the five rounds presents a crossword-style clue for a five-letter word. Find it above the letter grid, directly below the “Word X of 5 · 5 letters” round label.</li>
         <li>Press a tile and drag through four more letters. Move only up, down, left, or right; drag back over the previous tile to erase a step. Directional arrows show the route, and releasing submits it.</li>
         <li>Green means the right letter in the right spot, gold means the right letter in another spot, and gray means the letter is absent. You get six guesses per clue.</li>
-        <li>Win a round and one letter in that word pops gold and banks into the tray. Then the board locks in that word’s one fixed <strong>true trail</strong> as permanent walls — it may differ from the route you traced. Golden tiles always stay open.</li>
+        <li>Win a round and one scattered finale letter pops gold and banks into the tray. Then the board locks in that word’s one fixed <strong>true trail</strong> as permanent walls — it may differ from the route you traced. Golden tiles always stay open.</li>
         <li>Every board is verified up front: each later answer has a route around earlier true trails, and a simple Golden Thread remains possible after every trail is sealed.</li>
-        <li>After round five, the Golden Thread begins automatically. All five scattered gold positions appear; banked tiles show letters and missed letters stay hidden as “?”. Other open cells are blank white, while sealed trails are solid black.</li>
+        <li>After round five, the Golden Thread begins automatically. All five scattered gold positions appear; banked tiles show letters and missed letters stay hidden as “?”. The Gold Letters tray keeps the letters in the order you banked them, not spelling order — anagram the known letters to work out the finale. Other open cells are blank white, while sealed trails are solid black.</li>
         <li>For the Golden Thread, press and drag the shortest continuous route you can through every gold tile in spelling order. Gold tiles do not need to be adjacent — the thread may travel through any open cells between them. Never revisit a cell or enter a black obstacle — one simple path, pure Zip. Releasing after all five gold visits submits the thread.</li>
         <li>You get six thread attempts per entry. After a miss, gold tiles visited in the correct sequence position turn green and the others gray. Use all six and the finale locks until another golden letter is banked.</li>
         <li>Scoring: 100 points for each clue round won, −10 for each hint used, +50 for every golden letter still unbanked when you crack the finale, and a 600-point time bonus that drops by one point each second. The shortest possible Golden Thread is par: match it exactly to earn a flat +10 shortest-path bonus. Any longer winning thread earns 0 for this bonus.</li>
@@ -23674,6 +23674,53 @@
       function seededRandom(seed){
         return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};
       }
+      function shuffledGoldOrder(seed,letters,forbiddenWord){
+        var order=[0,1,2,3,4],random=seededRandom(seed),forbidden=forbiddenWord||letters.join('');
+        for(var i=order.length-1;i>0;i--){var j=Math.floor(random()*(i+1)),swap=order[i];order[i]=order[j];order[j]=swap;}
+        if(order.join('')==='01234'){var first=order[0];order[0]=order[1];order[1]=first;}
+        if(order.map(function(index){return letters[index];}).join('')===forbidden){
+          for(var a=0;a<order.length;a++){
+            for(var b=a+1;b<order.length;b++){
+              if(letters[order[a]]!==letters[order[b]]){var moved=order[a];order[a]=order[b];order[b]=moved;return order;}
+            }
+          }
+        }
+        return order;
+      }
+      function spellingRoundOrderFor(p,source){
+        var available=[0,1,2,3,4];
+        return p.finalWord.split('').map(function(letter){
+          var at=available.findIndex(function(sourceRound){return source[p.keyPositions[sourceRound]]===letter;});
+          return at===-1?-1:available.splice(at,1)[0];
+        });
+      }
+      function inversePermutation(permutation){
+        var inverse=new Array(permutation.length);
+        permutation.forEach(function(sourceRound,playRound){inverse[sourceRound]=playRound;});
+        return inverse;
+      }
+      function permuteRoundBundles(p,permutation,spellingRoundOrder){
+        var words=p.words.slice(),clues=p.clues.slice(),paths=p.canonicalPaths.slice(),keys=p.keyPositions.slice(),inverse=inversePermutation(permutation);
+        p.words=permutation.map(function(sourceRound){return words[sourceRound];});
+        p.clues=permutation.map(function(sourceRound){return clues[sourceRound];});
+        p.canonicalPaths=permutation.map(function(sourceRound){return paths[sourceRound];});
+        p.keyPositions=permutation.map(function(sourceRound){return keys[sourceRound];});
+        p.goldPermutation=permutation.slice();
+        p.finaleRoundOrder=spellingRoundOrder.map(function(sourceRound){return inverse[sourceRound];});
+      }
+      puzzles.forEach(function(p,index){
+        var source=buildBoard(p),physicalLetters=p.keyPositions.map(function(cell){return source[cell];});
+        permuteRoundBundles(p,shuffledGoldOrder(hashString('Threadle-gold-map-'+index+'-'+p.finalWord),physicalLetters,p.finalWord),spellingRoundOrderFor(p,source));
+      });
+      practicePuzzles.slice(0,3).forEach(function(p,index){
+        var source=buildBoard(p),physicalLetters=p.keyPositions.map(function(cell){return source[cell];});
+        permuteRoundBundles(p,shuffledGoldOrder(hashString('Threadle-practice-gold-map-'+index+'-'+p.finalWord),physicalLetters,p.finalWord),spellingRoundOrderFor(p,source));
+      });
+      function roundGoldCell(p,round){return p.keyPositions[round];}
+      function goldRoundForCell(p,cell){return p.keyPositions.indexOf(cell);}
+      function finaleTargetCells(p){
+        return p.finaleRoundOrder.map(function(round){return roundGoldCell(p,round);});
+      }
       function transformCell(cell,variant){
         var r=Math.floor(cell/BOARD_SIZE),c=cell%BOARD_SIZE,n=BOARD_SIZE-1,nr=r,nc=c;
         if(variant===1){nr=c;nc=n-r;}
@@ -23689,6 +23736,7 @@
         return {
           words:p.words.slice(), clues:p.clues.slice(), finalWord:p.finalWord, category:p.category, tier:p.tier, par:p.par,
           keyPositions:p.keyPositions.map(function(cell){return transformCell(cell,variant);}),
+          goldPermutation:p.goldPermutation.slice(), finaleRoundOrder:p.finaleRoundOrder.slice(),
           canonicalPaths:p.canonicalPaths.map(function(path){return path.map(function(cell){return transformCell(cell,variant);});})
         };
       }
@@ -23732,12 +23780,7 @@
         return false;
       }
       function orderedGoldCells(p,letters){
-        var available=p.keyPositions.slice();
-        return p.finalWord.split('').map(function(letter){
-          var at=available.findIndex(function(cell){return letters[cell]===letter;});
-          if(at===-1)return -1;
-          return available.splice(at,1)[0];
-        });
+        return finaleTargetCells(p,letters);
       }
       function findShortestGoldenThreadRoute(p,blocked,letters){
         var targets=orderedGoldCells(p,letters),goldSet=new Set(p.keyPositions);
@@ -23807,13 +23850,18 @@
             usedClues.add(key);
           });
           if(p.words.length!==5||p.clues.length!==5||p.finalWord.length!==5||p.canonicalPaths.length!==5)throw Error('Each puzzle needs five words, clues, canonical trails, and a five-letter finale');
+          if(!p.goldPermutation||p.goldPermutation.length!==5||p.goldPermutation.slice().sort().join('')!=='01234')throw Error('Each puzzle needs one five-round gold permutation');
+          if(!p.finaleRoundOrder||p.finaleRoundOrder.length!==5||p.finaleRoundOrder.slice().sort().join('')!=='01234')throw Error('Each puzzle finale must invert its gold permutation');
+          if(p.goldPermutation.join('')==='01234')throw Error('Every puzzle gold permutation must change the round sequence');
           if(new Set(p.keyPositions).size!==5)throw Error('Golden tiles must be distinct');
           p.keyPositions.forEach(function(cell,i){
             if(cell<0||cell>=CELL_COUNT||p.canonicalPaths[i].indexOf(cell)===-1)throw Error('Each gold letter must sit on its canonical trail');
             p.keyPositions.forEach(function(other,j){if(i<j&&Math.abs(Math.floor(cell/BOARD_SIZE)-Math.floor(other/BOARD_SIZE))+Math.abs(cell%BOARD_SIZE-other%BOARD_SIZE)<2)throw Error('Golden tiles must be scattered');});
           });
           var testBoard=buildBoard(p),keys=keyLettersFor(p,testBoard),blocked=new Set(),protectedGold=new Set(p.keyPositions);
-          if(keys.slice().sort().join('')!==p.finalWord.split('').sort().join(''))throw Error('Gold letters must be a scrambled finale word');
+          if(keys.slice().sort().join('')!==p.finalWord.split('').sort().join(''))throw Error('Gold letters must form the finale word');
+          if(keys.join('')===p.finalWord)throw Error('Round-order gold letters must not spell the finale word');
+          if(finaleTargetCells(p,testBoard).map(function(cell){return testBoard[cell];}).join('')!==p.finalWord)throw Error('Finale visit order must follow the board gold permutation');
           p.words.forEach(function(word,i){
             var trail=p.canonicalPaths[i];
             if(!validRoute(trail)||trail.map(function(cell){return testBoard[cell];}).join('')!==word)throw Error('Canonical trail must be a valid spelling path');
@@ -23828,8 +23876,13 @@
       function validateOnboardingPuzzles(){
         practicePuzzles.slice(0,3).forEach(function(p,index){
           if(p.words.length!==5||p.clues.length!==5||p.finalWord.length!==5)throw Error('Practice '+(index+1)+' must keep five rounds and a five-letter finale');
-          var testBoard=buildBoard(p), blocked=new Set(), protectedGold=new Set(p.keyPositions);
-          if(keyLettersFor(p,testBoard).slice().sort().join('')!==p.finalWord.split('').sort().join(''))throw Error('Practice '+(index+1)+' gold letters must form its finale word');
+          if(!p.goldPermutation||p.goldPermutation.length!==5||p.goldPermutation.slice().sort().join('')!=='01234')throw Error('Practice '+(index+1)+' needs one five-round gold permutation');
+          if(!p.finaleRoundOrder||p.finaleRoundOrder.length!==5||p.finaleRoundOrder.slice().sort().join('')!=='01234')throw Error('Practice '+(index+1)+' finale must invert its gold permutation');
+          if(p.goldPermutation.join('')==='01234')throw Error('Practice '+(index+1)+' gold permutation must change the round sequence');
+          var testBoard=buildBoard(p), blocked=new Set(), protectedGold=new Set(p.keyPositions), practiceGold=keyLettersFor(p,testBoard);
+          if(practiceGold.slice().sort().join('')!==p.finalWord.split('').sort().join(''))throw Error('Practice '+(index+1)+' gold letters must form its finale word');
+          if(practiceGold.join('')===p.finalWord)throw Error('Practice '+(index+1)+' round-order gold letters must not spell its finale word');
+          if(finaleTargetCells(p,testBoard).map(function(cell){return testBoard[cell];}).join('')!==p.finalWord)throw Error('Practice '+(index+1)+' finale order must follow its gold permutation');
           p.words.forEach(function(word,round){
             var trail=p.canonicalPaths[round];
             if(!validRoute(trail)||trail.map(function(cell){return testBoard[cell];}).join('')!==word)throw Error('Practice '+(index+1)+' round '+(round+1)+' needs a valid spelling trail');
@@ -23901,15 +23954,18 @@
       }
       function setupPuzzle(mode,index){
         puzzleMode=mode==='practice'?'practice':'daily';
+        var puzzleSeed;
         if(puzzleMode==='daily'){
           var daily=dailyPuzzle();
+          puzzleSeed=daily.seed;
           puzzleIndex=puzzles.indexOf(daily.base);
           activePuzzle=daily.puzzle;
           boardLetters=buildBoard(activePuzzle,seededRandom(daily.seed^0x9E3779B9));
         } else {
           puzzleIndex=((Number(index)||0)+practicePuzzles.length)%practicePuzzles.length;
+          puzzleSeed=hashString('WordZip-practice-'+puzzleIndex);
           activePuzzle=practicePuzzles[puzzleIndex];
-          boardLetters=buildBoard(activePuzzle,seededRandom(hashString('WordZip-practice-'+puzzleIndex)));
+          boardLetters=buildBoard(activePuzzle,seededRandom(puzzleSeed));
         }
         var p=activePuzzle;
         applyTheme(false);
@@ -23975,13 +24031,13 @@
         return selected.filter(function(cell){if(p.keyPositions.indexOf(cell)===-1||seen[cell])return false;seen[cell]=true;return true;});
       }
       function displayGoldLetter(p,cell){
-        var keyIndex=p.keyPositions.indexOf(cell), result=roundResults[keyIndex];
+        var bankRound=goldRoundForCell(p,cell), result=roundResults[bankRound];
         return result&&result.banked?boardLetters[cell]:'?';
       }
       function applyTiles(){
         var p=activePuzzle, blocked=obstacleCells();
         Array.prototype.forEach.call(els.board.children,function(tile,i){
-          var center=tile.querySelector('.tile-letter'), keyIndex=p.keyPositions.indexOf(i), banked=keyIndex!==-1&&roundResults[keyIndex]&&roundResults[keyIndex].banked, finalePlain=inFinal&&keyIndex===-1;
+          var center=tile.querySelector('.tile-letter'), bankRound=goldRoundForCell(p,i), isGold=bankRound!==-1, banked=isGold&&roundResults[bankRound]&&roundResults[bankRound].banked, finalePlain=inFinal&&!isGold;
           tile.className='tile'; center.textContent=boardLetters[i]; tile.style.removeProperty('--lock-step');
           if(blocked.has(i))tile.classList.add('obstacle');
           if(finalePlain){
@@ -23992,14 +24048,14 @@
             var lockStep=p.canonicalPaths[lockingTrail].indexOf(i);
             if(lockStep!==-1&&blocked.has(i)){tile.classList.add('obstacle-locking');tile.style.setProperty('--lock-step',lockStep);}
           }
-          if(inFinal&&keyIndex!==-1){
+          if(inFinal&&isGold){
             tile.classList.add('key-preview');
             center.textContent=displayGoldLetter(p,i);
           } else if(banked){
             tile.classList.add('key-revealed');
-            if(unlockingChest===keyIndex)tile.classList.add('key-unlocking');
+            if(unlockingChest===bankRound)tile.classList.add('key-unlocking');
           }
-          if(finalFeedback&&keyIndex!==-1&&Object.prototype.hasOwnProperty.call(finalFeedback,i))tile.classList.add(finalFeedback[i]?'thread-correct':'thread-absent');
+          if(finalFeedback&&isGold&&Object.prototype.hasOwnProperty.call(finalFeedback,i))tile.classList.add(finalFeedback[i]?'thread-correct':'thread-absent');
           else if(selected.indexOf(i)!==-1)tile.classList.add('selected');
           if(guessReveal){
             var revealStep=guessReveal.cells.indexOf(i);
@@ -24008,10 +24064,10 @@
           var row=Math.floor(i/BOARD_SIZE)+1, column=i%BOARD_SIZE+1, label;
           if(finalePlain)label=(blocked.has(i)?'Obstacle':'Open cell')+', row '+row+', column '+column;
           else {
-            var shown=(inFinal&&keyIndex!==-1)?displayGoldLetter(p,i):boardLetters[i];
+            var shown=(inFinal&&isGold)?displayGoldLetter(p,i):boardLetters[i];
             label=(shown==='?'?'Hidden golden letter':'Letter '+shown)+', row '+row+', column '+column;
             if(blocked.has(i))label+=', obstacle';
-            if(inFinal&&keyIndex!==-1)label+=', golden thread tile';
+            if(inFinal&&isGold)label+=', golden thread tile';
             else if(banked)label+=', revealed golden letter banked for the finale';
           }
           tile.setAttribute('aria-label',label);
@@ -24024,8 +24080,8 @@
         for(var i=1;i<points.length;i++){
           var a=points[i-1],b=points[i],dx=b.x-a.x,dy=b.y-a.y,line=document.createElementNS('http://www.w3.org/2000/svg','line');
           var touchesVisibleGold=[selected[i-1],selected[i]].some(function(cell){
-            var keyIndex=activePuzzle.keyPositions.indexOf(cell);
-            return keyIndex!==-1&&(inFinal||(roundResults[keyIndex]&&roundResults[keyIndex].banked));
+            var bankRound=goldRoundForCell(activePuzzle,cell);
+            return bankRound!==-1&&(inFinal||(roundResults[bankRound]&&roundResults[bankRound].banked));
           });
           line.setAttribute('x1',a.x+dx*.24);line.setAttribute('y1',a.y+dy*.24);line.setAttribute('x2',a.x+dx*.70);line.setAttribute('y2',a.y+dy*.70);
           line.setAttribute('class','path-segment'+(touchesVisibleGold?' gold-pass':''));line.setAttribute('marker-end','url(#pathArrow)');els.pathSegments.appendChild(line);
@@ -24042,8 +24098,8 @@
         els.keyRack.hidden=!hasGuessed;
         if(!hasGuessed){els.keyRack.innerHTML='';return;}
         var goldLetters=keyLettersFor(p,boardLetters);
-        var bankedLetters=p.words.map(function(word,i){var result=roundResults[i];return result&&result.banked?goldLetters[i]:'?';});
-        els.keyRack.innerHTML='<span class="key-rack-label">Gold letters</span>'+bankedLetters.map(function(ch,i){return '<span class="key-letter'+(unlockingChest===i?' bank-just':'')+'">'+ch+'</span>';}).join('');
+        var bankedLetters=goldLetters.map(function(letter,round){var result=roundResults[round];return result&&result.banked?letter:'?';});
+        els.keyRack.innerHTML='<span class="key-rack-label">Gold letters</span>'+bankedLetters.map(function(ch,round){return '<span class="key-letter'+(unlockingChest===round?' bank-just':'')+'">'+ch+'</span>';}).join('');
       }
       function renderState(){
         var p=activePuzzle;
@@ -24148,9 +24204,9 @@
         if(visits.length!==5){setStatus('Keep tracing until one continuous path has visited all five gold tiles.','error');return;}
         startTimer();
         var letters=visits.map(function(cell){return displayGoldLetter(p,cell);});
-        var actualLetters=visits.map(function(cell){return boardLetters[cell];});
-        var feedback=actualLetters.map(function(letter,i){return letter===ans[i];});
-        var solved=actualLetters.join('')===ans;
+        var targetCells=finaleTargetCells(p,boardLetters);
+        var feedback=visits.map(function(cell,i){return cell===targetCells[i];});
+        var solved=feedback.every(function(correct){return correct;});
         finalFeedback={}; selected.forEach(function(cell){finalFeedback[cell]=false;});
         visits.forEach(function(cell,i){finalFeedback[cell]=feedback[i];});
         var attempt={letters:letters,feedback:feedback,solved:solved};
