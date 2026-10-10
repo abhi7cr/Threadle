@@ -516,6 +516,9 @@
       margin-bottom: 6px;
     }
     .round-nav .stage-label { margin: 0; padding-right: 0; text-align: center; white-space: nowrap; }
+    body.is-finale .round-nav { grid-template-columns: minmax(0, 1fr); }
+    body.is-finale .round-nav .round-arrow[hidden] { display: none; }
+    body.is-finale .round-nav .stage-label { white-space: normal; line-height: 1.2; }
     .current-hint {
       min-height: 18px;
       margin-top: 5px;
@@ -624,6 +627,10 @@
     .tutorial-head strong { max-width: 210px; font-family: "Nunito", "Avenir Next Rounded", "Arial Rounded MT Bold", sans-serif; font-size: 25px; line-height: 1.05; }
     .tutorial-skip { min-height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-size: 10px; font-weight: 750; }
     .demo-stage { position: relative; width: min(100%, 330px); margin: 0 auto; }
+    .demo-roundbar { display: grid; grid-template-columns: 28px 1fr 28px; align-items: center; gap: 7px; margin-bottom: 5px; }
+    .demo-roundbar span { height: 26px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); font-size: 18px; line-height: 1; }
+    .demo-roundbar strong { text-align: center; color: var(--accent-strong); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+    .demo-clue { min-height: 24px; margin-bottom: 7px; text-align: center; color: var(--ink); font-size: 12px; font-weight: 750; }
     .demo-board-wrap { position: relative; }
     .demo-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; aspect-ratio: 1; }
     .demo-cell {
@@ -650,7 +657,13 @@
     .tutorial-card.phase-thread .demo-path.thread { animation: demoDrawThread 6.4s linear forwards; }
     .demo-path.thread { stroke-dasharray: 900; stroke-dashoffset: 900; }
     .demo-path.done { marker-end: url(#demoArrow); }
-    .demo-tray { min-height: 44px; margin: 10px auto 0; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .demo-feedback { min-height: 30px; margin: 8px auto 0; display: flex; align-items: center; justify-content: center; gap: 5px; color: var(--muted); font-size: 8px; font-weight: 750; }
+    .demo-feedback[hidden], .demo-navhint[hidden] { display: none; }
+    .demo-feedback .swatch { width: 23px; height: 23px; border-radius: 4px; font-size: 10px; }
+    .demo-feedback b { margin-left: 3px; color: var(--ink); font-size: 9px; }
+    .demo-navhint { min-height: 24px; margin-top: 5px; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 9px; font-weight: 750; }
+    .demo-navhint strong { padding: 4px 7px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); }
+    .demo-tray { min-height: 44px; margin: 7px auto 0; display: flex; align-items: center; justify-content: center; gap: 6px; }
     .demo-tray-label { margin-right: 3px; color: var(--muted); font-size: 8px; text-transform: uppercase; letter-spacing: .07em; }
     .demo-bank { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 5px; color: var(--muted); font-size: 13px; font-weight: 750; }
     .demo-bank.filled { border-color: var(--key); background: var(--key-soft); color: var(--key-ink); animation: demoBank 1.1s cubic-bezier(.2,.9,.25,1) both; }
@@ -659,7 +672,7 @@
     .tutorial-caption p { margin: 7px 0 0; color: var(--ink); font-family: "Nunito", "Avenir Next Rounded", "Arial Rounded MT Bold", sans-serif; font-size: 20px; font-weight: 650; line-height: 1.15; }
     .tutorial-progress { height: 3px; overflow: hidden; border-radius: 2px; background: var(--tile); }
     .tutorial-progress span { display: block; width: 100%; height: 100%; background: var(--accent); transform: scaleX(0); transform-origin: left; }
-    .tutorial-card.playing .tutorial-progress span { animation: tutorialProgress 20s linear forwards; }
+    .tutorial-card.playing .tutorial-progress span { animation: tutorialProgress 22s linear forwards; }
 
     .win-panel { text-align: center; padding: 10px 4px 2px; }
     .win-mark { width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-size: 26px; }
@@ -898,10 +911,12 @@
   <div class="tutorial-backdrop" id="tutorialModal" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle">
     <div class="tutorial-card" id="tutorialCard">
       <div class="tutorial-head">
-        <strong id="tutorialTitle">A round in 20 seconds</strong>
+        <strong id="tutorialTitle">Threadle in 22 seconds</strong>
         <button class="tutorial-skip" id="skipTutorial" type="button">Skip</button>
       </div>
       <div class="demo-stage" aria-hidden="true">
+        <div class="demo-roundbar"><span>‹</span><strong id="demoRoundLabel">Round 1 of 5</strong><span>›</span></div>
+        <div class="demo-clue" id="demoClue">Clue: Follow a line or path</div>
         <div class="demo-board-wrap">
           <div class="demo-board" id="demoBoard"></div>
           <svg class="demo-svg" viewBox="0 0 400 400" preserveAspectRatio="none">
@@ -910,14 +925,21 @@
             <path class="demo-path thread" id="demoThreadPath" d="M50 50 H250 V150 H150 V250 H350 V350" hidden></path>
           </svg>
         </div>
+        <div class="demo-feedback" id="demoFeedback" hidden>
+          <span class="swatch green">A</span><span>right</span>
+          <span class="swatch gold">A</span><span>other</span>
+          <span class="swatch gray">A</span><span>absent</span>
+          <b>6 guesses</b>
+        </div>
+        <div class="demo-navhint" id="demoNavHint" hidden><strong>Skip −25</strong><span>‹ › come back</span></div>
         <div class="demo-tray" aria-label="Demo golden letter tray">
           <span class="demo-tray-label">Gold letters</span>
           <span class="demo-bank" id="demoBank">?</span><span class="demo-bank">?</span><span class="demo-bank">?</span><span class="demo-bank">?</span><span class="demo-bank">?</span>
         </div>
       </div>
       <div class="tutorial-caption" aria-live="polite">
-        <div class="tutorial-step" id="tutorialStep">1 · Read the clue</div>
-        <p id="tutorialCaption">Each round starts with a crossword-style clue above the grid, directly below the round label. Trace its five-letter answer.</p>
+        <div class="tutorial-step" id="tutorialStep">1 · Five clue rounds</div>
+        <p id="tutorialCaption">Each round shows a clue. Drag through letters to trace its five-letter answer.</p>
       </div>
       <div class="tutorial-progress" aria-hidden="true"><span></span></div>
     </div>
@@ -23626,7 +23648,7 @@
         puzzle.words.forEach(function(word){dictionary.add(word);});
       });
       var els = {};
-      ['board','boardWrap','clue','currentHint','roundLabel','prevRoundBtn','nextRoundBtn','status','timer','hintBtn','skipBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','finaleInstruction','guessHistory','keyRack','controls','modePicker','tutorialModal','tutorialCard','tutorialBtn','guideTutorialBtn','skipTutorial','demoBoard','demoWordPath','demoThreadPath','demoBank','tutorialStep','tutorialCaption'].forEach(function(id){ els[id]=document.getElementById(id); });
+      ['board','boardWrap','clue','currentHint','roundLabel','prevRoundBtn','nextRoundBtn','status','timer','hintBtn','skipBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','finaleInstruction','guessHistory','keyRack','controls','modePicker','tutorialModal','tutorialCard','tutorialBtn','guideTutorialBtn','skipTutorial','demoBoard','demoWordPath','demoThreadPath','demoBank','demoRoundLabel','demoClue','demoFeedback','demoNavHint','tutorialStep','tutorialCaption'].forEach(function(id){ els[id]=document.getElementById(id); });
       var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode='daily', puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, tutorialTimers=[], tutorialInitial=true, gameInitialized=false, tutorialReturnFocus=null;
       function clearTutorialTimers(){ tutorialTimers.forEach(function(timer){clearTimeout(timer);}); tutorialTimers=[]; }
       function tutorialLater(fn,delay){ tutorialTimers.push(setTimeout(fn,delay)); }
@@ -23643,33 +23665,42 @@
       function showTutorial(initial){
         clearTutorialTimers(); tutorialInitial=!!initial; tutorialReturnFocus=document.activeElement;
         var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        var traceAt=reduced?300:700, bankAt=reduced?2500:6000, threadAt=reduced?5000:11500, readyAt=reduced?7300:18100, closeAt=reduced?8500:20000;
+        var traceAt=reduced?200:700, feedbackAt=reduced?3100:5000, bankAt=reduced?6500:10000, threadAt=reduced?9500:14000, readyAt=reduced?12500:20200, closeAt=reduced?14000:22000;
         renderDemoBoard(tutorialDemo.guessBoard,[]);
+        els.demoRoundLabel.textContent='Round 1 of 5'; els.demoClue.textContent='Clue: Follow a line or path';
+        els.demoFeedback.hidden=true; els.demoNavHint.hidden=true;
         els.demoBank.textContent='?'; els.demoBank.className='demo-bank';
         els.demoWordPath.hidden=false; els.demoWordPath.classList.remove('done'); els.demoThreadPath.hidden=true; els.demoThreadPath.classList.remove('done');
-        els.tutorialStep.textContent='1 · Read the clue';
-        els.tutorialCaption.textContent='Each round starts with a crossword-style clue above the grid, directly below the round label. Trace its five-letter answer.';
+        els.tutorialStep.textContent='1 · Five clue rounds';
+        els.tutorialCaption.textContent='Each round shows a clue. Drag through letters to trace its five-letter answer.';
         els.tutorialCard.className='tutorial-card'; void els.tutorialCard.offsetWidth; els.tutorialCard.classList.add('playing','phase-trace');
         els.tutorialModal.classList.add('open'); els.skipTutorial.textContent='Skip'; els.skipTutorial.focus();
-        tutorialDemo.guessPath.forEach(function(cell,step){tutorialLater(function(){var tile=els.demoBoard.children[cell];if(tile)tile.classList.add('on');},traceAt+step*(reduced?60:850));});
+        tutorialDemo.guessPath.forEach(function(cell,step){tutorialLater(function(){var tile=els.demoBoard.children[cell];if(tile)tile.classList.add('on');},traceAt+step*(reduced?40:750));});
         tutorialLater(function(){
-          els.demoWordPath.classList.add('done');
-          els.tutorialStep.textContent='2 · Win and bank gold';
-          els.tutorialCaption.textContent='A correct word reveals one golden tile. Its letter pops into the tray for the finale.';
+          els.demoWordPath.classList.add('done'); els.demoFeedback.hidden=false; els.demoNavHint.hidden=false;
+          els.tutorialStep.textContent='2 · Six guesses';
+          els.tutorialCaption.textContent='Colors work like Wordle. Stuck? Skip costs 25 points; use ‹ › to come back later.';
+        },feedbackAt);
+        tutorialLater(function(){
+          els.demoFeedback.hidden=true; els.demoNavHint.hidden=true;
+          els.demoRoundLabel.textContent='Round 2 of 5'; els.demoClue.textContent='Next unsolved clue';
+          els.tutorialStep.textContent='3 · Solve, bank, move on';
+          els.tutorialCaption.textContent='A solved word banks one gold letter, then moves you to the next unsolved round.';
           var tile=els.demoBoard.children[tutorialDemo.bankCell]; if(tile){tile.classList.remove('on');tile.classList.add('demo-gold','demo-pop');}
           els.demoBank.textContent=tutorialDemo.bankLetter; els.demoBank.classList.add('filled');
         },bankAt);
         tutorialLater(function(){
           renderDemoBoard(tutorialDemo.finaleBoard,tutorialDemo.goldCells,true);
+          els.demoRoundLabel.textContent='Finale'; els.demoClue.textContent='Hidden word: 5 gold letters';
           els.demoWordPath.hidden=true; els.demoThreadPath.hidden=false;
-          els.tutorialStep.textContent='3 · Weave the Golden Thread';
-          els.tutorialCaption.textContent='Trace through all five gold tiles in spelling order. Match the shortest possible path — par — for a flat +10 bonus. The tiles need not be adjacent. No revisits.';
+          els.tutorialStep.textContent='4 · Trace the hidden word';
+          els.tutorialCaption.textContent='After all 5 rounds, trace one path through every gold letter—in the order that spells the hidden word.';
           els.tutorialCard.classList.remove('phase-trace'); void els.tutorialCard.offsetWidth; els.tutorialCard.classList.add('phase-thread');
         },threadAt);
         tutorialLater(function(){
           els.demoThreadPath.classList.add('done');
           els.tutorialStep.textContent='Ready';
-          els.tutorialCaption.textContent='Solve five clues, then connect the gold. Match par for a flat +10 shortest-path bonus; a longer winning thread earns 0.';
+          els.tutorialCaption.textContent='Five clues. Six guesses each. Bank five gold letters. Then connect them in spelling order.';
           els.skipTutorial.textContent='Start';
         },readyAt);
         tutorialLater(closeTutorial,closeAt);
@@ -24165,14 +24196,17 @@
           }).join('');
           return;
         }
-        if(roundResults[roundIndex]&&!roundLocked){
-          var skippedAvailable=skippedRounds.some(function(skipped,index){return skipped&&!roundResults[index];});
+        if(roundResults[roundIndex]){
+          var unresolvedRemain=completedRoundCount()<p.words.length;
           els.guessBudget.textContent='0';
           els.roundLabel.textContent='Round '+(roundIndex+1)+' of 5';
-          els.clue.textContent=skippedAvailable?'Use the arrows to return to a skipped round':'No clue rounds remain';
+          els.clue.textContent=unresolvedRemain?'Moving to the next unresolved round…':'No clue rounds remain';
           queueClueFit();
           els.controls.classList.remove('final-mode');
-          els.hintBtn.disabled=true; els.skipBtn.disabled=true;
+          els.hintBtn.disabled=true;
+          els.skipBtn.disabled=gameOver||!unresolvedRemain;
+          els.skipBtn.textContent='Skip';
+          els.skipBtn.title=unresolvedRemain?'Continue to the next unresolved round':'';
           els.guessHistory.innerHTML='';
           return;
         }
@@ -24187,9 +24221,10 @@
         els.tryBtn.textContent='Release to submit';
         els.hintBtn.disabled=gameOver||roundLocked||(hintReveals[roundIndex]||[]).length>=5;
         els.hintBtn.textContent='Hint';
-        els.skipBtn.disabled=gameOver||roundLocked||pendingRoundCount()<=1;
+        var zeroGuessesLeft=roundGuesses.length>=MAX_ROUND_GUESSES;
+        els.skipBtn.disabled=gameOver||(!zeroGuessesLeft&&(roundLocked||pendingRoundCount()<=1));
         els.skipBtn.textContent='Skip';
-        els.skipBtn.title=els.skipBtn.disabled&&!gameOver&&!roundLocked?'The last pending round must be attempted.':'Skip this clue for 25 points';
+        els.skipBtn.title=zeroGuessesLeft?'Continue after abandoning this round':(els.skipBtn.disabled&&!gameOver&&!roundLocked?'The last pending round must be attempted.':'Skip this clue for 25 points');
         els.guessHistory.innerHTML=roundGuesses.slice().reverse().map(function(g){
           if(g.hidden)return '<div class="history-row" aria-label="Out-of-order round answer hidden"><span class="history-word">OTHER</span>'+g.feedback.map(function(f){return '<b class="'+f+'"></b>';}).join('')+'</div>';
           return '<div class="history-row" aria-label="'+g.word+'"><span class="history-word">'+g.word+'</span>'+g.feedback.map(function(f,i){return '<b class="'+f+'">'+g.word[i]+'</b>';}).join('')+(g.solved?'<small>SOLVED</small>':'')+'</div>';
@@ -24212,12 +24247,30 @@
         }
         return -1;
       }
+      function nextUnresolvedRound(after){
+        for(var step=1;step<=activePuzzle.words.length;step++){
+          var candidate=(after+step)%activePuzzle.words.length;
+          if(!roundResults[candidate])return candidate;
+        }
+        return -1;
+      }
       function moveToRound(index,message){
         inFinal=false; applyTheme(false); roundIndex=index; visitedRounds[index]=true; roundGuesses=roundGuessHistory[index]; selected=[]; finalFeedback=null; guessReveal=null; roundLocked=false; lockingTrail=-1;
         applyTiles(); renderState(); setStatus(message||'Round '+(index+1)+'. Trace a five-letter answer.','');
       }
       function useSkip(){
-        if(gameOver||roundLocked||inFinal)return;
+        if(gameOver||inFinal)return;
+        if(roundResults[roundIndex]&&roundGuesses.length>=MAX_ROUND_GUESSES){
+          advanceRound(roundIndex);
+          return;
+        }
+        if(roundGuesses.length>=MAX_ROUND_GUESSES){
+          roundResults[roundIndex]={word:activePuzzle.words[roundIndex],solved:false,banked:false};
+          skippedRounds[roundIndex]=false;
+          advanceRound(roundIndex);
+          return;
+        }
+        if(roundLocked)return;
         if(pendingRoundCount()<=1){setStatus('This is the last pending round. Attempt it or return to a skipped round.','error');return;}
         startTimer();
         skippedRounds[roundIndex]=true;
@@ -24254,27 +24307,32 @@
             unlockingChest=submittingRound; lockingTrail=submittingRound; sealedPaths[target]=p.canonicalPaths[submittingRound].slice();
             applyTiles();renderState();setStatus('Correct! Trail sealed. Golden '+keyLettersFor(p,boardLetters)[submittingRound]+' banked.','success');
             setTimeout(function(){if(activePuzzle!==p||roundIndex!==submittingRound)return;unlockingChest=-1;lockingTrail=-1;applyTiles();renderState();},400);
-            setTimeout(advanceRound,720);
+            setTimeout(function(){if(activePuzzle===p&&roundIndex===submittingRound)advanceRound(submittingRound);},720);
             return;
           }
           if(roundGuesses.length>=MAX_ROUND_GUESSES){
             roundResults[submittingRound]={word:target,solved:false,banked:false}; skippedRounds[submittingRound]=false;
-            applyTiles(); renderState(); setStatus('Round missed. No golden letter was revealed.','error');
-            setTimeout(advanceRound,1150); return;
+            applyTiles(); renderState(); setStatus('Round abandoned. No golden letter was revealed.','error');
+            setTimeout(function(){if(activePuzzle===p&&roundIndex===submittingRound)advanceRound(submittingRound);},1150); return;
           }
           roundLocked=false; applyTiles(); renderState(); setStatus('Valid guess. '+(MAX_ROUND_GUESSES-roundGuesses.length)+' left.','');
         },480);
       }
-      function advanceRound(){
-        var next=nextPendingRound(roundIndex);
+      function advanceRound(fromRound){
+        if(Number.isInteger(fromRound)&&roundIndex!==fromRound)return;
+        var next=nextUnresolvedRound(roundIndex);
         unlockingChest=-1; lockingTrail=-1;
-        if(next!==-1){moveToRound(next,'New clue. Win this round to reveal its golden letter.');return;}
+        if(next!==-1){
+          skippedRounds[next]=false;
+          moveToRound(next,'New clue. Win this round to reveal its golden letter.');
+          return;
+        }
         roundLocked=false;
         if(completedRoundCount()<activePuzzle.words.length){
-          applyTiles(); renderState(); setStatus('Skipped rounds remain. Use the arrows to return and solve them.',''); return;
+          applyTiles(); renderState(); setStatus('Unresolved rounds remain. Use the arrows to continue.',''); return;
         }
         if(finaleIsUnlocked()){startFinalRound();return;}
-        applyTiles(); renderState(); setStatus('Golden Thread locked. No skipped rounds remain to bank another letter.','error');
+        applyTiles(); renderState(); setStatus('Golden Thread locked. No unresolved rounds remain to bank another letter.','error');
       }
       function standardFeedback(guess,target){ var out=new Array(target.length).fill('absent'),counts={}; for(var i=0;i<target.length;i++){if(guess[i]===target[i])out[i]='correct';else counts[target[i]]=(counts[target[i]]||0)+1;} for(var j=0;j<target.length;j++){if(out[j]==='correct')continue;if(counts[guess[j]]){out[j]='present';counts[guess[j]]--;}} return out; }
       function startFinalRound(){
