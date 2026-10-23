@@ -26878,6 +26878,7 @@
         "VE5FR0E=": "a person who acts on behalf of another",
         "TVJBTEE=": "a warning sound or signal of danger",
         "U1VCTEE=": "Dumbledore's first name.",
+        "Tk9SRUg=": "tall wading bird with a long neck and a dagger-like bill",
         "UkVETEE=": "any of several trees or shrubs of the genus Alnus, belonging to the birch family",
         "TkVJTEE=": "belonging to another country; also, a being from another world",
         "WU9MTEE=": "a metal that is a combination of two or more elements, at least one of which is a metal",
@@ -27281,6 +27282,21 @@
         finalWord:'S0NJVVE=',
         category:'culture'
       });
+      // Dec 2, 2026 is a Themed Wednesday (Animals), but its date seed lands
+      // on the same board slot as Nov 18 (Music), so it gets a dedicated
+      // board instead of a repeat: fresh animal words on proven trail
+      // geometry borrowed from an existing board, served only for
+      // 2026-12-02 by the hook in dailyPuzzleFor below.
+      var dec2Puzzle = {
+        words:['SFRPTFM=','T0tDRUc=','VEVSR0U=','RVNPT00=','QVROQU0='],
+        clues:['Slow-moving tree dweller that sleeps most of the day.','Small lizard famous for climbing smooth walls and ceilings.','Tall white wading bird found in wetlands and marshes.','Largest member of the deer family, with broad, flat antlers.','Huge, gentle ray that flaps through the ocean like an underwater bird.'],
+        finalWord:'Tk9SRUg=',
+        category:'nature',
+        tier:5,
+        keyPositions:[11,9,21,19,31],
+        canonicalPaths:[[35,29,23,17,11],[8,9,3,4,5],[16,22,21,27,28],[18,19,13,7,6],[24,30,31,32,26]],
+        unblocked:[2,3,4,8,13]
+      };
       // Answers ship encoded (base64 of the reversed word) so they are not
       // readable as plaintext in this file; decode them back in place here,
       // before anything validates, displays, or scores a board. Practice
@@ -27299,6 +27315,7 @@
         puzzles.forEach(decodeBoard);
         practicePuzzles.forEach(decodeBoard);
         decodeBoard(guidedPuzzle);
+        decodeBoard(dec2Puzzle);
       })();
       // Difficulty is pre-rated from answer familiarity, clue directness, and
       // shortest Golden Thread length. Tier 1 is restricted to boards whose
@@ -27330,7 +27347,7 @@
       var dictionary = window.WORDZIP_DICTIONARY || new Set();
       // Every clue answer is valid by definition, even when the bundled general
       // lexicon omits a proper noun or specialized term used by a puzzle.
-      puzzles.concat(practicePuzzles.slice(0,3),[guidedPuzzle]).forEach(function(puzzle){
+      puzzles.concat(practicePuzzles.slice(0,3),[guidedPuzzle,dec2Puzzle]).forEach(function(puzzle){
         puzzle.words.forEach(function(word){dictionary.add(word);});
       });
       var els = {};
@@ -28249,6 +28266,11 @@
         var source=buildBoard(guidedPuzzle),physicalLetters=guidedPuzzle.keyPositions.map(function(cell){return source[cell];});
         permuteRoundBundles(guidedPuzzle,shuffledGoldOrder(hashString('Threadle-guided-gold-map-'+guidedPuzzle.finalWord),physicalLetters,guidedPuzzle.finalWord),spellingRoundOrderFor(guidedPuzzle,source));
       })();
+      (function(){
+        var source=buildBoard(dec2Puzzle),physicalLetters=dec2Puzzle.keyPositions.map(function(cell){return source[cell];});
+        permuteRoundBundles(dec2Puzzle,shuffledGoldOrder(hashString('Threadle-gold-map-dec2-2026-12-02-'+dec2Puzzle.finalWord),physicalLetters,dec2Puzzle.finalWord),spellingRoundOrderFor(dec2Puzzle,source));
+        storeBoardPar(dec2Puzzle,source);
+      })();
       function roundGoldCell(p,round){return p.keyPositions[round];}
       function goldRoundForCell(p,cell){return p.keyPositions.indexOf(cell);}
       function finaleTargetCells(p){
@@ -28295,6 +28317,12 @@
       // seed comes from the date string and the difficulty tier from its
       // weekday, exactly how today's daily is chosen.
       function dailyPuzzleFor(date){
+        // Dec 2, 2026 would repeat Nov 18's Music board (same date-seed
+        // slot); it serves the dedicated Animals board instead.
+        if(dateKeyFor(date)==='2026-12-02'){
+          var dec2Seed=hashString('WordZip-2026-12-02');
+          return {base:dec2Puzzle, seed:dec2Seed, puzzle:transformedPuzzle(dec2Puzzle,(dec2Seed>>>8)%8)};
+        }
         var seed=hashString('WordZip-'+dateKeyFor(date)), tier=difficultyTierForDate(date);
         var eligible=puzzles.filter(function(p){return p.tier===tier;});
         if(!eligible.length)throw Error('Daily difficulty tier '+tier+' has no puzzles');
