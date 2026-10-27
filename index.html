@@ -27335,7 +27335,7 @@
       });
       var els = {};
       ['board','boardWrap','clue','currentHint','roundLabel','prevRoundBtn','nextRoundBtn','status','timer','hintBtn','skipBtn','tryBtn','hintsUsedCount','gameView','winView','pathSegments','helpModal','helpBtn','closeHelp','traceReadout','guessBudget','dailyBtnLabel','dailyDiffDots','finaleInstruction','guessHistory','keyRack','controls','menuBtn','gameMenu','modePicker','dailyBtn','previousBtn','practiceSelect','tutorialBtn','guideTutorialBtn','guidedBanner','guidedQuitBtn','challengeBanner','challengeBannerText','tipCard','tipText','tipDismiss','leaderboardBtn','leaderboardModal','leaderboardList','dailyLeaderboardTab','allTimeLeaderboardTab','closeLeaderboard','groupsBtn','groupsModal','groupsContent','closeGroups','joinModal','joinTitle','joinText','joinActions','headerAuthBtn','authPopover','headerAuthContent','headerAuthStatus','headerGreeting','menuAuthBtn','menuAuthPopover','menuAuthContent','menuAuthStatus','signInGate','signInGateStatus','gateGithubBtn','gateGoogleBtn','playOfflineBtn','gatePracticeBtn','gateGuidedBtn','pastPanel','pastDateInput','pastPlayBtn','streakChip'].forEach(function(id){ els[id]=document.getElementById(id); });
-      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode=null, puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, bankedMs=0, clockBegun=false, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, playedShareText=null, gameInitialized=false, pastDateKey=null, hintCooldownEndsAt=0, hintCooldownTimer=null;
+      var today=new Date(), dailyKey=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0'), puzzleMode=null, puzzleIndex=0, activePuzzle=null, boardLetters=[], sealedPaths={}, selected=[], roundIndex=0, roundGuesses=[], roundGuessHistory=[], roundResults=[], skippedRounds=[], visitedRounds=[], totalWordGuesses=0, totalFinalGuesses=0, finalGuesses=[], finaleAttemptHistory=[], finalFeedback=null, guessReveal=null, hintReveals=[], hintsUsed=0, skipCount=0, startedAt=null, bankedMs=0, clockBegun=false, timerHandle=null, dragging=false, gameOver=false, roundLocked=false, inFinal=false, finaleLockAt=-1, bankedAtFinaleWin=0, finalPathLength=0, unlockingChest=-1, lockingTrail=-1, finalScoreData=null, playedShareText=null, gameInitialized=false, pastDateKey=null, hintCooldownEndsAt=0, hintCooldownTimer=null, shareRoundOutcomes=null, everSkipped=[];
       var SUPABASE_URL='https://uczjzlvjissypvrbgvuj.supabase.co', SUPABASE_KEY='sb_publishable_faOzZtHKkVlmpG_1LOzABQ_IYKcwv7Z';
       var PENDING_SCORE_PARAM='threadle_score';
       var supabaseClient=null, leaderboardClient=null, authUser=null, authReady=false, offlineDaily=false, pendingScoreRestored=false, dailyAccessRequest=0, pastAccessRequest=0, playedPastResults={}, submittedBoards=new Set(), submittingBoards=new Set(), attemptedBoards=new Set(), leaderboardScope='daily', leaderboardRequest=0, resultsLeaderboardRequest=0, leaderboardReturnFocus=null, myGroups=[], groupMateIds=new Set(), groupContextUserId=null, groupContextPromise=null, selectedGroupId=null, groupLbScope='daily', groupsReturnFocus=null, joinReturnFocus=null, pendingInviteCode=null, inviteSettled=false, inviteGroup=null, streakInfo=null, streakUserId=null, streakRequest=0;
@@ -27523,7 +27523,7 @@
           roundIndex:roundIndex,
           roundGuessHistory:roundGuessHistory,
           roundResults:roundResults,
-          skippedRounds:skippedRounds,
+          skippedRounds:skippedRounds, everSkipped:everSkipped,
           visitedRounds:visitedRounds,
           sealedPaths:sealedPaths,
           totalWordGuesses:totalWordGuesses,
@@ -27663,7 +27663,7 @@
         roundGuessHistory=Array.isArray(state.roundGuessHistory)?state.roundGuessHistory:p.words.map(function(){return [];});
         roundGuesses=roundGuessHistory[roundIndex]||[];
         roundResults=Array.isArray(state.roundResults)?state.roundResults:[];
-        skippedRounds=Array.isArray(state.skippedRounds)?state.skippedRounds:p.words.map(function(){return false;});
+        skippedRounds=Array.isArray(state.skippedRounds)?state.skippedRounds:p.words.map(function(){return false;}); everSkipped=Array.isArray(state.everSkipped)?state.everSkipped:p.words.map(function(){return false;});
         visitedRounds=Array.isArray(state.visitedRounds)?state.visitedRounds:p.words.map(function(word,index){return index===0;});
         sealedPaths=state.sealedPaths&&typeof state.sealedPaths==='object'?state.sealedPaths:{};
         totalWordGuesses=Number(state.totalWordGuesses)||0;
@@ -28653,7 +28653,7 @@
         var p=activePuzzle;
         applyTheme(false);
         storeBoardPar(p,boardLetters);
-        selected=[]; sealedPaths={}; roundIndex=0; roundGuessHistory=p.words.map(function(){return [];}); roundGuesses=roundGuessHistory[0]; roundResults=[]; skippedRounds=p.words.map(function(){return false;}); visitedRounds=p.words.map(function(word,index){return index===0;}); totalWordGuesses=0; totalFinalGuesses=0; finalGuesses=[]; finaleAttemptHistory=[]; finalFeedback=null; guessReveal=null; hintReveals=p.words.map(function(){return [];}); hintsUsed=0; skipCount=0; clearHintCooldown(); startedAt=null; bankedMs=0; clockBegun=false; gameOver=false; roundLocked=false; inFinal=false; finaleLockAt=-1; bankedAtFinaleWin=0; finalPathLength=0; unlockingChest=-1; lockingTrail=-1; finalScoreData=null; playedShareText=null;
+        selected=[]; sealedPaths={}; roundIndex=0; roundGuessHistory=p.words.map(function(){return [];}); roundGuesses=roundGuessHistory[0]; roundResults=[]; skippedRounds=p.words.map(function(){return false;}); everSkipped=p.words.map(function(){return false;}); visitedRounds=p.words.map(function(word,index){return index===0;}); totalWordGuesses=0; totalFinalGuesses=0; finalGuesses=[]; finaleAttemptHistory=[]; finalFeedback=null; guessReveal=null; hintReveals=p.words.map(function(){return [];}); hintsUsed=0; skipCount=0; clearHintCooldown(); startedAt=null; bankedMs=0; clockBegun=false; gameOver=false; roundLocked=false; inFinal=false; finaleLockAt=-1; bankedAtFinaleWin=0; finalPathLength=0; unlockingChest=-1; lockingTrail=-1; finalScoreData=null; playedShareText=null; shareRoundOutcomes=null;
         if(timerHandle)clearInterval(timerHandle); timerHandle=null;
         els.timer.textContent='0:00';
         els.modePicker.hidden=puzzleMode==='guided'; els.guidedBanner.hidden=puzzleMode!=='guided'; syncChallengeBanner(); els.gameView.hidden=false; els.winView.hidden=true; els.keyRack.hidden=true; els.controls.classList.remove('final-mode'); syncMenuPulse();
@@ -28984,7 +28984,7 @@
         if(roundLocked)return;
         if(pendingRoundCount()<=1){setStatus('This is the last pending round. Attempt it or return to a skipped round.','error');return;}
         startTimer();
-        skippedRounds[roundIndex]=true;
+        skippedRounds[roundIndex]=true; everSkipped[roundIndex]=true;
         skipCount++;
         var next=nextPendingRound(roundIndex);
         moveToRound(next,'Round skipped. 25 points deducted.');
@@ -29717,7 +29717,7 @@
       // score itself still stands exactly as before.
       function persistShareData(row){
         if(!supabaseClient||!authUser||!finalScoreData)return;
-        var payload={finalScoreData:finalScoreData,bankedAtFinaleWin:bankedAtFinaleWin,finaleAttemptHistory:finaleAttemptHistory},request;
+        var payload={finalScoreData:finalScoreData,bankedAtFinaleWin:bankedAtFinaleWin,finaleAttemptHistory:finaleAttemptHistory,roundOutcomes:shareRoundOutcomes||buildRoundOutcomes()},request;
         try { request=supabaseClient.from('scores').update({share_data:payload}).eq('user_id',authUser.id).eq('board_date',row.board_date); }
         catch (error) { console.warn('Share data save failed',error);return; }
         Promise.resolve(request).then(function(result){if(result&&result.error)console.warn('Share data save failed',result.error);}).catch(function(error){console.warn('Share data save failed',error);});
@@ -29772,7 +29772,7 @@
         var data=raw;
         if(typeof raw==='string'){try{data=JSON.parse(raw);}catch(error){return null;}}
         if(!data||typeof data!=='object'||!data.finalScoreData||typeof data.finalScoreData!=='object')return null;
-        return {finalScoreData:data.finalScoreData,finaleAttemptHistory:Array.isArray(data.finaleAttemptHistory)?data.finaleAttemptHistory:[],bankedAtFinaleWin:Math.max(0,Number(data.bankedAtFinaleWin)||0)};
+        return {finalScoreData:data.finalScoreData,finaleAttemptHistory:Array.isArray(data.finaleAttemptHistory)?data.finaleAttemptHistory:[],bankedAtFinaleWin:Math.max(0,Number(data.bankedAtFinaleWin)||0),roundOutcomes:Array.isArray(data.roundOutcomes)?data.roundOutcomes:null};
       }
       // Wires the Share score button on an already-played results view.
       // With a stored payload, the state buildShareText() reads is restored
@@ -29788,16 +29788,38 @@
           finalScoreData=payload.finalScoreData;
           finaleAttemptHistory=payload.finaleAttemptHistory;
           bankedAtFinaleWin=payload.bankedAtFinaleWin;
+          shareRoundOutcomes=payload.roundOutcomes||null;
           playedShareText=null;
         } else {
           playedShareText='Threadle Daily '+dateKey+(isPast?' (previous day)':'')+'\nScore '+score+'\nHints '+hints+' · Skips '+skips+' · Time '+formatTime(timeSeconds)+'\n'+PUBLIC_LINK;
+          shareRoundOutcomes=null;
         }
         button.addEventListener('click',shareScore);
       }
+      // Per-round share strip: one cell per round, in round order. A cell
+      // shows the round's headline only — a single emoji cannot blend two
+      // colors, so a skipped round reads orange even when hints were also
+      // used (hint use still totals in the Hint penalty line). Abandoned
+      // (all 6 guesses used, no gold) reads ? — it is not a skip: skipped
+      // rounds always circle back, abandoned ones never do.
+      function buildRoundOutcomes(){
+        return activePuzzle.words.map(function(word,i){
+          return {solved:!!(roundResults[i]&&roundResults[i].solved),hints:(hintReveals[i]?hintReveals[i].length:0),skipped:!!(everSkipped&&everSkipped[i])};
+        });
+      }
+      function roundsStripText(){
+        if(!Array.isArray(shareRoundOutcomes)||shareRoundOutcomes.length!==5)return '';
+        var cells=[];
+        for(var i=0;i<5;i++){
+          var o=shareRoundOutcomes[i];
+          if(!o||typeof o.solved!=='boolean'||typeof o.hints!=='number'||typeof o.skipped!=='boolean')return '';
+          cells.push(!o.solved?'❓':o.skipped?'🟧':o.hints<=0?'🟩':o.hints===1?'🟨':'🟥');
+        }
+        return '\nRounds '+cells.join(' ');
+      }
       function buildShareText(){
         var d=finalScoreData, heading=puzzleMode==='daily'?'Threadle Daily '+dailyKey:puzzleMode==='past'?'Threadle Daily '+(pastDateKey||'')+' (previous day)':'Threadle Practice '+(puzzleIndex+1);
-        var emoji=finaleAttemptHistory.map(function(attempt){return attempt.feedback.map(function(ok){return ok?'🟩':'⬛';}).join('');}).join('\n');
-        return heading+'\n'+emoji+'\n\nScore '+d.score+'\nRound points +'+d.roundPoints+'\nSkip penalty: -'+d.skipPenalty+'\nHint penalty: -'+d.hintPenalty+'\nShortest-path bonus +'+d.efficiencyBonus+' ('+(d.pathLength===d.par?'matched par':'longer than par')+')\nTime bonus +'+d.timeBonus+'\nGolden Thread '+d.pathLength+' cells (par '+d.par+')\nFinale cracked with '+bankedAtFinaleWin+'/5 golden letters\n'+PUBLIC_LINK;
+        return heading+roundsStripText()+'\n\nScore '+d.score+'\nRound points +'+d.roundPoints+'\nSkip penalty: -'+d.skipPenalty+'\nHint penalty: -'+d.hintPenalty+'\nShortest-path bonus +'+d.efficiencyBonus+' ('+(d.pathLength===d.par?'matched par':'longer than par')+')\nTime bonus +'+d.timeBonus+'\nGolden Thread '+d.pathLength+' cells (par '+d.par+')\nFinale cracked with '+bankedAtFinaleWin+'/5 golden letters\n'+PUBLIC_LINK;
       }
       function clipboardFallback(text){
         if(navigator.clipboard&&navigator.clipboard.writeText)return navigator.clipboard.writeText(text);
@@ -29901,9 +29923,10 @@
         var skippedCount=skippedRounds.filter(function(skipped,index){return skipped&&!roundResults[index];}).length, roundPoints=solvedCount*100, skipPenalty=skipCount*25, hintPenalty=totalHintPenalty(), efficiencyBonus=finalPathLength===p.par?10:0, timeBonus=Math.max(0,600-timeSeconds);
         var score=roundPoints-skipPenalty-hintPenalty+efficiencyBonus+timeBonus;
         finalScoreData={score:score,roundPoints:roundPoints,skipPenalty:skipPenalty,hintPenalty:hintPenalty,efficiencyBonus:efficiencyBonus,pathLength:finalPathLength,par:p.par,timeBonus:timeBonus,hints:hintsUsed,skips:skipCount,timeSeconds:timeSeconds};
+        shareRoundOutcomes=buildRoundOutcomes();
         // Remember a finished previous-day game for this session, so going
         // back to that date opens its result screen instead of a fresh board.
-        if(puzzleMode==='past'&&pastDateKey)playedPastResults[pastDateKey]={score:finalScoreData.score,hints:finalScoreData.hints,skips:finalScoreData.skips,timeSeconds:finalScoreData.timeSeconds,shareData:{finalScoreData:finalScoreData,bankedAtFinaleWin:bankedAtFinaleWin,finaleAttemptHistory:finaleAttemptHistory}};
+        if(puzzleMode==='past'&&pastDateKey)playedPastResults[pastDateKey]={score:finalScoreData.score,hints:finalScoreData.hints,skips:finalScoreData.skips,timeSeconds:finalScoreData.timeSeconds,shareData:{finalScoreData:finalScoreData,bankedAtFinaleWin:bankedAtFinaleWin,finaleAttemptHistory:finaleAttemptHistory,roundOutcomes:shareRoundOutcomes}};
         var completedWords=roundResults.map(function(result){return result&&result.solved?'<span>'+result.word+'</span>':'';}).join('');
         var nextLabel=puzzleMode==='daily'?'Practice 1':puzzleMode==='past'?'Play a practice puzzle':'Next practice';
         // Daily results name the puzzle's difficulty right above the score,
