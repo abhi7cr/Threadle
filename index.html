@@ -29815,7 +29815,12 @@
           if(!o||typeof o.solved!=='boolean'||typeof o.hints!=='number'||typeof o.skipped!=='boolean')return '';
           cells.push(!o.solved?'❓':o.skipped?'🟧':o.hints<=0?'🟩':o.hints===1?'🟨':'🟥');
         }
-        return '\nRounds '+cells.join(' ');
+        // Matched par (shortest Golden Thread) threads the cells with
+        // bright-gold sparkles; otherwise the cells stay space-separated.
+        // The strip is a single line by construction: cells joined with no
+        // newlines, so all five squares plus sparkles stay on one row.
+        var matchedPar=finalScoreData&&finalScoreData.pathLength===finalScoreData.par;
+        return '\nRounds '+cells.join(matchedPar?'✨':' ');
       }
       function buildShareText(){
         var d=finalScoreData, heading=puzzleMode==='daily'?'Threadle Daily '+dailyKey:puzzleMode==='past'?'Threadle Daily '+(pastDateKey||'')+' (previous day)':'Threadle Practice '+(puzzleIndex+1);
